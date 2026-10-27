@@ -1,0 +1,659 @@
+{
+  "roles": [
+    {
+      "id": 1,
+      "name": "SUPER_ADMIN",
+      "description": "Global system platform administrator"
+    },
+    {
+      "id": 2,
+      "name": "TENANT_ADMIN",
+      "description": "Tenant organization owner with admin privileges"
+    },
+    {
+      "id": 3,
+      "name": "ASSET_MANAGER",
+      "description": "Asset custodian and license allocator"
+    },
+    {
+      "id": 4,
+      "name": "MEMBER",
+      "description": "Standard organization member with read & checkout rights"
+    }
+  ],
+  "plans": [
+    {
+      "id": 1,
+      "name": "Free Trial",
+      "maxUsers": 10,
+      "maxAssets": 100,
+      "monthlyPrice": 0,
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "name": "Pro",
+      "maxUsers": 50,
+      "maxAssets": 5000,
+      "monthlyPrice": 49,
+      "isActive": true
+    },
+    {
+      "id": 3,
+      "name": "Enterprise",
+      "maxUsers": 500,
+      "maxAssets": 50000,
+      "monthlyPrice": 199,
+      "isActive": true
+    }
+  ],
+  "licenseTypes": [
+    {
+      "id": 1,
+      "name": "PERPETUAL",
+      "description": "One-time purchase with indefinite usage rights",
+      "isSeatBased": false,
+      "isExpirable": false
+    },
+    {
+      "id": 2,
+      "name": "SUBSCRIPTION",
+      "description": "Recurring time-bound SaaS or enterprise subscription",
+      "isSeatBased": false,
+      "isExpirable": true
+    },
+    {
+      "id": 3,
+      "name": "SEAT_BASED",
+      "description": "Named-user or floating seat allocation contract",
+      "isSeatBased": true,
+      "isExpirable": true
+    },
+    {
+      "id": 4,
+      "name": "USAGE_BASED",
+      "description": "Metered consumption or API-quota license",
+      "isSeatBased": false,
+      "isExpirable": true
+    },
+    {
+      "id": 5,
+      "name": "OPEN_SOURCE",
+      "description": "Permissive or copyleft open-source software license",
+      "isSeatBased": false,
+      "isExpirable": false
+    }
+  ],
+  "tenants": [
+    {
+      "id": "tenant-acme-corp",
+      "name": "Acme Corporation",
+      "slug": "acme",
+      "status": "ACTIVE",
+      "planId": 2,
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "tenant-stark-ind",
+      "name": "Stark Industries",
+      "slug": "stark",
+      "status": "ACTIVE",
+      "planId": 3,
+      "createdAt": "2026-02-01T00:00:00.000Z",
+      "updatedAt": "2026-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "tenant-1793086309675-ap3y",
+      "createdAt": "2026-10-27T07:31:49.675Z",
+      "updatedAt": "2026-10-27T07:31:49.675Z",
+      "name": "Future Group",
+      "slug": "future-group",
+      "contactEmail": "futuregroup123@gmail.com",
+      "planId": 1,
+      "status": "TRIAL"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-super-admin",
+      "email": "superadmin@assetvault.io",
+      "fullName": "Global Super Administrator",
+      "roleId": 1,
+      "tenantId": null,
+      "passwordHash": "$2a$10$Wdkk2P5XbxNUKMged8lf.ec4X3KILgM4XYxy8hBQ1.8jeYMuvlBIi",
+      "isActive": true,
+      "department": "Executive",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "user-tenant-admin",
+      "email": "admin@acme.com",
+      "fullName": "Acme Administrator",
+      "roleId": 2,
+      "tenantId": "tenant-acme-corp",
+      "passwordHash": "$2a$10$Wdkk2P5XbxNUKMged8lf.ec4X3KILgM4XYxy8hBQ1.8jeYMuvlBIi",
+      "isActive": true,
+      "department": "IT Operations",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "user-asset-manager",
+      "email": "manager@acme.com",
+      "fullName": "Acme Asset Manager",
+      "roleId": 3,
+      "tenantId": "tenant-acme-corp",
+      "passwordHash": "$2a$10$Wdkk2P5XbxNUKMged8lf.ec4X3KILgM4XYxy8hBQ1.8jeYMuvlBIi",
+      "isActive": true,
+      "department": "Procurement",
+      "createdAt": "2026-01-20T00:00:00.000Z",
+      "updatedAt": "2026-01-20T00:00:00.000Z"
+    },
+    {
+      "id": "user-member",
+      "email": "member@acme.com",
+      "fullName": "Acme Team Member",
+      "roleId": 4,
+      "tenantId": "tenant-acme-corp",
+      "passwordHash": "$2a$10$Wdkk2P5XbxNUKMged8lf.ec4X3KILgM4XYxy8hBQ1.8jeYMuvlBIi",
+      "isActive": true,
+      "department": "Engineering",
+      "createdAt": "2026-02-01T00:00:00.000Z",
+      "updatedAt": "2026-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "user-1793086309676-swqw",
+      "createdAt": "2026-10-27T07:31:49.676Z",
+      "updatedAt": "2026-10-27T09:54:21.781Z",
+      "tenantId": "tenant-1793086309675-ap3y",
+      "roleId": 2,
+      "email": "futuregroup123@gmail.com",
+      "fullName": "Sudir Niranj R",
+      "passwordHash": "$2a$12$XqytgXbjZCSv8JN7cX6xaux4h1JHKrTzzuc0/cnZ9KAx8rRlpX/sG",
+      "isActive": true,
+      "lastLoginAt": "2026-10-27T09:54:21.724Z"
+    },
+    {
+      "id": "user-1793086350485-q7kw",
+      "createdAt": "2026-10-27T07:32:30.485Z",
+      "updatedAt": "2026-10-27T09:40:40.564Z",
+      "email": "karthikeyan2007@gmail.com",
+      "fullName": "Karthik",
+      "passwordHash": "$2a$12$/vhcm4HEU2pb7St4HxweqO2ICerl2X2Av908lIVOsCDZSTNWZ7/rm",
+      "avatarUrl": null,
+      "isActive": true,
+      "tenantId": "tenant-1793086309675-ap3y",
+      "roleId": 3
+    }
+  ],
+  "vendors": [
+    {
+      "id": "vendor-1",
+      "tenantId": "tenant-acme-corp",
+      "name": "Adobe Systems Inc.",
+      "contactEmail": "enterprise-licensing@adobe.com",
+      "websiteUrl": "https://www.adobe.com",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "vendor-2",
+      "tenantId": "tenant-acme-corp",
+      "name": "JetBrains s.r.o.",
+      "contactEmail": "sales@jetbrains.com",
+      "websiteUrl": "https://www.jetbrains.com",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "vendor-3",
+      "tenantId": "tenant-acme-corp",
+      "name": "Monotype Imaging Inc.",
+      "contactEmail": "licensing@monotype.com",
+      "websiteUrl": "https://www.monotype.com",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "vendor-4",
+      "tenantId": "tenant-acme-corp",
+      "name": "Figma Inc.",
+      "contactEmail": "sales@figma.com",
+      "websiteUrl": "https://www.figma.com",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "vendor-1793086580715-086n",
+      "createdAt": "2026-10-27T07:36:20.715Z",
+      "updatedAt": "2026-10-27T07:36:20.715Z",
+      "name": "Microsoft",
+      "contactEmail": "microsoft123@gmail.com",
+      "website": "https://www.microsoft.com",
+      "supportPhone": "+91 9876543210",
+      "tenantId": "tenant-1793086309675-ap3y"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-1",
+      "tenantId": "tenant-acme-corp",
+      "name": "Developer Tools",
+      "description": "Integrated Development Environments and CLI utilities",
+      "parentId": null,
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "cat-2",
+      "tenantId": "tenant-acme-corp",
+      "name": "Creative & Design",
+      "description": "UI/UX software, illustration and visual assets",
+      "parentId": null,
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "cat-3",
+      "tenantId": "tenant-acme-corp",
+      "name": "Typography & Fonts",
+      "description": "Commercial font families and web font licenses",
+      "parentId": "cat-2",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    }
+  ],
+  "tags": [
+    {
+      "id": "tag-1",
+      "tenantId": "tenant-acme-corp",
+      "name": "Core Tooling",
+      "color": "#3B82F6",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "tag-2",
+      "tenantId": "tenant-acme-corp",
+      "name": "Engineering",
+      "color": "#10B981",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "tag-3",
+      "tenantId": "tenant-acme-corp",
+      "name": "Brand Guidelines",
+      "color": "#EC4899",
+      "createdAt": "2026-01-15T00:00:00.000Z",
+      "updatedAt": "2026-01-15T00:00:00.000Z"
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-1",
+      "tenantId": "tenant-acme-corp",
+      "name": "IntelliJ IDEA Ultimate",
+      "type": "SOFTWARE",
+      "status": "ACTIVE",
+      "categoryId": "cat-1",
+      "vendorId": "vendor-2",
+      "description": "Premier Java, Kotlin & Fullstack development environment for engineering teams.",
+      "createdAt": "2026-01-16T00:00:00.000Z",
+      "updatedAt": "2026-01-16T00:00:00.000Z"
+    },
+    {
+      "id": "asset-2",
+      "tenantId": "tenant-acme-corp",
+      "name": "Helvetica Neue Pro Complete",
+      "type": "FONT",
+      "status": "ACTIVE",
+      "categoryId": "cat-3",
+      "vendorId": "vendor-3",
+      "description": "Corporate brand typography family across OpenType and WOFF2 formats.",
+      "createdAt": "2026-01-17T00:00:00.000Z",
+      "updatedAt": "2026-01-17T00:00:00.000Z"
+    },
+    {
+      "id": "asset-3",
+      "tenantId": "tenant-acme-corp",
+      "name": "Adobe Creative Cloud Suite",
+      "type": "SOFTWARE",
+      "status": "ACTIVE",
+      "categoryId": "cat-2",
+      "vendorId": "vendor-1",
+      "description": "Full suite including Photoshop, Illustrator, Premiere Pro, and After Effects.",
+      "createdAt": "2026-01-18T00:00:00.000Z",
+      "updatedAt": "2026-01-18T00:00:00.000Z"
+    },
+    {
+      "id": "asset-4",
+      "tenantId": "tenant-acme-corp",
+      "name": "Figma Enterprise Organization",
+      "type": "SOFTWARE",
+      "status": "ACTIVE",
+      "categoryId": "cat-2",
+      "vendorId": "vendor-4",
+      "description": "Collaborative cloud interface design, prototyping and design system maintenance.",
+      "createdAt": "2026-01-19T00:00:00.000Z",
+      "updatedAt": "2026-01-19T00:00:00.000Z"
+    }
+  ],
+  "assetVersions": [
+    {
+      "id": "ver-1",
+      "assetId": "asset-1",
+      "versionNumber": "2026.1",
+      "storageUrl": "https://download.jetbrains.com/idea/ideaIU-2026.1.tar.gz",
+      "fileSize": 1048576000,
+      "mimeType": "application/gzip",
+      "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "changelog": "Initial 2026 release with JDK 25 support",
+      "createdAt": "2026-01-16T00:00:00.000Z"
+    }
+  ],
+  "licenses": [
+    {
+      "id": "lic-1",
+      "tenantId": "tenant-acme-corp",
+      "assetId": "asset-1",
+      "vendorId": "vendor-2",
+      "licenseKey": "JB-INTEL-2026-ACME-99124",
+      "type": "SEAT_BASED",
+      "status": "ACTIVE",
+      "totalSeats": 35,
+      "allocatedSeats": 2,
+      "cost": 499,
+      "autoRenew": true,
+      "expiresAt": "2027-04-25T07:28:57.320Z",
+      "createdAt": "2026-01-16T00:00:00.000Z",
+      "updatedAt": "2026-01-16T00:00:00.000Z"
+    },
+    {
+      "id": "lic-2",
+      "tenantId": "tenant-acme-corp",
+      "assetId": "asset-2",
+      "vendorId": "vendor-3",
+      "licenseKey": "MONO-HN-CORP-44091",
+      "type": "PERPETUAL",
+      "status": "ACTIVE",
+      "totalSeats": 100,
+      "allocatedSeats": 1,
+      "cost": 1450,
+      "autoRenew": false,
+      "expiresAt": null,
+      "createdAt": "2026-01-17T00:00:00.000Z",
+      "updatedAt": "2026-01-17T00:00:00.000Z"
+    },
+    {
+      "id": "lic-3",
+      "tenantId": "tenant-acme-corp",
+      "assetId": "asset-3",
+      "vendorId": "vendor-1",
+      "licenseKey": "ADBE-CC-ENT-2026-081",
+      "type": "SUBSCRIPTION",
+      "status": "ACTIVE",
+      "totalSeats": 20,
+      "allocatedSeats": 1,
+      "cost": 899,
+      "autoRenew": true,
+      "expiresAt": "2026-12-11T07:28:57.320Z",
+      "createdAt": "2026-01-18T00:00:00.000Z",
+      "updatedAt": "2026-01-18T00:00:00.000Z"
+    },
+    {
+      "id": "lic-4",
+      "tenantId": "tenant-acme-corp",
+      "assetId": "asset-4",
+      "vendorId": "vendor-4",
+      "licenseKey": "FIGMA-ENT-ORGLIC-309",
+      "type": "SEAT_BASED",
+      "status": "ACTIVE",
+      "totalSeats": 25,
+      "allocatedSeats": 2,
+      "cost": 750,
+      "autoRenew": true,
+      "expiresAt": "2027-02-24T07:28:57.320Z",
+      "createdAt": "2026-01-19T00:00:00.000Z",
+      "updatedAt": "2026-01-19T00:00:00.000Z"
+    },
+    {
+      "id": "2afbd6aa-670a-4c6b-9fe2-0b888ca34f07",
+      "createdAt": "2026-10-27T07:51:01.607Z",
+      "updatedAt": "2026-10-27T07:51:01.607Z",
+      "name": "Future Group logo",
+      "licenseKey": "TEST-1234-5678-DEMO",
+      "totalSeats": 15,
+      "allocatedSeats": 1,
+      "usedSeats": 1,
+      "cost": 499,
+      "currency": "USD",
+      "startDate": "2026-10-27T00:00:00.000Z",
+      "endDate": "2027-10-27T00:00:00.000Z",
+      "autoRenew": true,
+      "status": "ACTIVE",
+      "tenantId": "tenant-1793086309675-ap3y",
+      "vendorId": "vendor-1793086580715-086n",
+      "licenseTypeId": 3
+    }
+  ],
+  "allocations": [
+    {
+      "id": "alloc-future-group-1",
+      "tenantId": "tenant-1793086309675-ap3y",
+      "licenseId": "2afbd6aa-670a-4c6b-9fe2-0b888ca34f07",
+      "userId": "user-1793086350485-q7kw",
+      "allocatedBy": "user-1793086309676-swqw",
+      "status": "ACTIVE",
+      "allocatedAt": "2026-10-27T09:56:00.000Z",
+      "notes": "Allocated via sp_allocate_license_seat"
+    },
+    {
+      "id": "alloc-1",
+      "tenantId": "tenant-acme-corp",
+      "licenseId": "lic-1",
+      "userId": "user-tenant-admin",
+      "status": "ACTIVE",
+      "allocatedAt": "2026-01-20T00:00:00.000Z",
+      "notes": "Lead Infrastructure Engineer seat"
+    },
+    {
+      "id": "alloc-2",
+      "tenantId": "tenant-acme-corp",
+      "licenseId": "lic-1",
+      "userId": "user-member",
+      "status": "ACTIVE",
+      "allocatedAt": "2026-02-05T00:00:00.000Z",
+      "notes": "Fullstack Core Dev seat"
+    },
+    {
+      "id": "alloc-3",
+      "tenantId": "tenant-acme-corp",
+      "licenseId": "lic-2",
+      "userId": "user-asset-manager",
+      "status": "ACTIVE",
+      "allocatedAt": "2026-01-22T00:00:00.000Z",
+      "notes": "Design System & Typography Lead"
+    },
+    {
+      "id": "alloc-4",
+      "tenantId": "tenant-acme-corp",
+      "licenseId": "lic-3",
+      "userId": "user-asset-manager",
+      "status": "ACTIVE",
+      "allocatedAt": "2026-01-25T00:00:00.000Z",
+      "notes": "Creative Suite seat"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "tenantId": "tenant-acme-corp",
+      "userId": "user-tenant-admin",
+      "type": "SYSTEM",
+      "title": "AssetVault Operational",
+      "message": "Workspace is running with in-memory persistence and RLS guardrails active.",
+      "isRead": false,
+      "createdAt": "2026-10-27T07:28:57.320Z"
+    },
+    {
+      "id": "notif-2",
+      "tenantId": "tenant-acme-corp",
+      "userId": "user-tenant-admin",
+      "type": "EXPIRY_60",
+      "title": "Adobe CC License Renewal",
+      "message": "License ADBE-CC-ENT-2026-081 renewal is due in 45 days.",
+      "isRead": false,
+      "createdAt": "2026-10-27T07:28:57.320Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "audit-1",
+      "tenantId": "tenant-acme-corp",
+      "userId": "user-tenant-admin",
+      "action": "INSERT",
+      "entityType": "License",
+      "entityId": "lic-1",
+      "details": {
+        "note": "Provisioned initial JetBrains developer pack"
+      },
+      "createdAt": "2026-01-16T00:00:00.000Z"
+    },
+    {
+      "id": "auditlog-1793086309677-bmog",
+      "createdAt": "2026-10-27T07:31:49.677Z",
+      "updatedAt": "2026-10-27T07:31:49.677Z",
+      "tenantId": "tenant-1793086309675-ap3y",
+      "userId": "user-1793086309676-swqw",
+      "tableName": "tenants",
+      "recordId": "tenant-1793086309675-ap3y",
+      "action": "INSERT",
+      "newData": {
+        "event": "TENANT_ONBOARDED",
+        "tenantName": "Future Group",
+        "slug": "future-group",
+        "plan": "Free Trial",
+        "adminEmail": "futuregroup123@gmail.com",
+        "ipAddress": "169.254.169.126",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "id": "5628e968-54ff-4f53-b2cf-838ec8a911ff",
+      "createdAt": "2026-10-27T09:58:45.055Z",
+      "updatedAt": "2026-10-27T09:58:45.055Z",
+      "tableName": "licenses",
+      "recordId": "2afbd6aa-670a-4c6b-9fe2-0b888ca34f07",
+      "action": "UPDATE",
+      "newData": {
+        "event": "LICENSE_KEY_REVEALED",
+        "accessedBy": "user-1793086309676-swqw",
+        "revealedAt": "2026-10-27T09:58:45.055Z"
+      },
+      "tenantId": "tenant-1793086309675-ap3y",
+      "userId": "user-1793086309676-swqw"
+    },
+    {
+      "id": "e91009c2-41cf-4e62-88a4-bc2260530fec",
+      "createdAt": "2026-10-27T09:59:18.879Z",
+      "updatedAt": "2026-10-27T09:59:18.879Z",
+      "tableName": "licenses",
+      "recordId": "2afbd6aa-670a-4c6b-9fe2-0b888ca34f07",
+      "action": "UPDATE",
+      "newData": {
+        "event": "LICENSE_KEY_REVEALED",
+        "accessedBy": "user-1793086309676-swqw",
+        "revealedAt": "2026-10-27T09:59:18.879Z"
+      },
+      "tenantId": "tenant-1793086309675-ap3y",
+      "userId": "user-1793086309676-swqw"
+    },
+    {
+      "id": "ff8d720c-1b71-4b8f-9cf8-82bb5b78f2e6",
+      "createdAt": "2026-10-27T09:59:31.554Z",
+      "updatedAt": "2026-10-27T09:59:31.554Z",
+      "tableName": "licenses",
+      "recordId": "2afbd6aa-670a-4c6b-9fe2-0b888ca34f07",
+      "action": "UPDATE",
+      "newData": {
+        "event": "LICENSE_KEY_REVEALED",
+        "accessedBy": "user-1793086309676-swqw",
+        "revealedAt": "2026-10-27T09:59:31.554Z"
+      },
+      "tenantId": "tenant-1793086309675-ap3y",
+      "userId": "user-1793086309676-swqw"
+    }
+  ],
+  "refreshTokens": [
+    {
+      "id": "refreshtoken-1793086309727-pv41",
+      "createdAt": "2026-10-27T07:31:49.727Z",
+      "updatedAt": "2026-10-27T07:31:49.727Z",
+      "userId": "user-1793086309676-swqw",
+      "tokenHash": "b68812f0b0b562cd3f968b0dc97b812a8838a7f9ec729c8cd707a5a4c31e6c31",
+      "expiresAt": "2026-11-03T07:31:49.681Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "ipAddress": "169.254.169.126"
+    },
+    {
+      "id": "4d208c89-97ef-49a5-a8a1-90e1dda9bd05",
+      "createdAt": "2026-10-27T07:49:17.844Z",
+      "updatedAt": "2026-10-27T07:49:17.844Z",
+      "userId": "user-1793086309676-swqw",
+      "tokenHash": "20ec9e18081db79235862e85c28bbc370dbd1af8ad72d6b057520992ef58f117",
+      "expiresAt": "2026-11-03T07:49:17.792Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "ipAddress": "169.254.169.126"
+    },
+    {
+      "id": "d8f0f7b8-cef8-4afa-a54c-c195d9a6f4bd",
+      "createdAt": "2026-10-27T08:45:33.813Z",
+      "updatedAt": "2026-10-27T08:45:33.813Z",
+      "revokedAt": null,
+      "userId": "user-1793086309676-swqw",
+      "tokenHash": "4125815a503a7643bb755754d6d865062471270de9ed0a7802f278079fc29c0b",
+      "expiresAt": "2026-11-03T08:45:33.758Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "ipAddress": "169.254.169.126"
+    },
+    {
+      "id": "fbb08ab8-9c54-4db8-92a5-188fec846991",
+      "createdAt": "2026-10-27T09:10:35.602Z",
+      "updatedAt": "2026-10-27T09:10:35.602Z",
+      "revokedAt": null,
+      "userId": "user-1793086309676-swqw",
+      "tokenHash": "29e1ee7fa666005e6a78f016b20c32a91b56d3a437e8e0b4d996ada41bb1c309",
+      "expiresAt": "2026-11-03T09:10:35.550Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "ipAddress": "169.254.169.126"
+    },
+    {
+      "id": "87424b9c-b008-438c-b6fd-a2d737f9108f",
+      "createdAt": "2026-10-27T09:26:09.358Z",
+      "updatedAt": "2026-10-27T09:26:09.358Z",
+      "revokedAt": null,
+      "userId": "user-1793086309676-swqw",
+      "tokenHash": "19a5b99c048a2c6d3c87cad2c0cdc847f455eefeb999e1c1d2c6914a157f4c2c",
+      "expiresAt": "2026-11-03T09:26:09.307Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "ipAddress": "169.254.169.126"
+    },
+    {
+      "id": "bf18e4bb-014c-4661-b469-328b6e5657bf",
+      "createdAt": "2026-10-27T09:54:21.723Z",
+      "updatedAt": "2026-10-27T09:54:21.723Z",
+      "revokedAt": null,
+      "userId": "user-1793086309676-swqw",
+      "tokenHash": "008a686ea65df76fe37dc17ad65da96199c9724a22d43c5bdff697f7e51efc3b",
+      "expiresAt": "2026-11-03T09:54:21.670Z",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+      "ipAddress": "169.254.169.126"
+    }
+  ],
+  "assetTags": [],
+  "assetlicense": [],
+  "licenserenewal": []
+}

@@ -656,7 +656,9 @@ export class MockPrismaStore {
       if (lic) {
         cloned.license = {
           ...lic,
+          name: lic.name || lic.licenseKey || 'Enterprise License',
           asset: this.state.assets.find((a) => a.id === lic.assetId) || null,
+          vendor: this.state.vendors.find((v) => v.id === lic.vendorId) || null,
         };
       } else {
         cloned.license = null;
@@ -906,6 +908,83 @@ export function createMockPrismaClient(): any {
             }));
           }
 
+          if (sqlText.includes('sp_allocate_license_seat')) {
+            const values = Array.isArray(queryObj?.values) ? queryObj.values : [];
+            const [licenseId, userId, allocatedBy] = values;
+            const lic = mockStore.state.licenses.find((l) => l.id === licenseId);
+            if (!lic) {
+              throw new Error('License not found');
+            }
+            const activeForLicense = mockStore.state.allocations.filter(
+              (a) => a.licenseId === licenseId && a.status === 'ACTIVE'
+            );
+            const currentUsed = Math.max(Number(lic.allocatedSeats ?? lic.usedSeats ?? 0), activeForLicense.length);
+            if (currentUsed >= Number(lic.totalSeats || 1)) {
+              throw new Error('License seats exhausted');
+            }
+            const existingActive = activeForLicense.find((a) => a.userId === userId);
+            if (existingActive) {
+              throw new Error('User already holds an active seat for this license');
+            }
+            const newAlloc = {
+              id: require('crypto').randomUUID(),
+              tenantId: lic.tenantId || 'tenant-acme-corp',
+              licenseId,
+              userId,
+              allocatedBy: allocatedBy || userId,
+              status: 'ACTIVE',
+              allocatedAt: new Date(),
+              revokedAt: null,
+              notes: 'Allocated via sp_allocate_license_seat',
+            };
+            mockStore.state.allocations.unshift(newAlloc);
+            const updatedActiveCount = mockStore.state.allocations.filter(
+              (a) => a.licenseId === licenseId && a.status === 'ACTIVE'
+            ).length;
+            lic.allocatedSeats = Math.max(currentUsed + 1, updatedActiveCount);
+            lic.usedSeats = lic.allocatedSeats;
+            mockStore.saveState();
+            return [{ p_allocation_id: newAlloc.id }];
+          }
+
+          if (sqlText.includes('sp_release_license_seat')) {
+            const values = Array.isArray(queryObj?.values) ? queryObj.values : [];
+            const [allocationId, revokedBy, reason] = values;
+            const alloc = mockStore.state.allocations.find((a) => a.id === allocationId);
+            if (alloc && alloc.status === 'ACTIVE') {
+              alloc.status = 'REVOKED';
+              alloc.revokedAt = new Date();
+              alloc.revokedBy = revokedBy || null;
+              alloc.revokeReason = reason || 'Administrative seat release';
+              const lic = mockStore.state.licenses.find((l) => l.id === alloc.licenseId);
+              if (lic) {
+                const remainingActive = mockStore.state.allocations.filter(
+                  (a) => a.licenseId === lic.id && a.status === 'ACTIVE'
+                ).length;
+                lic.allocatedSeats = remainingActive;
+                lic.usedSeats = remainingActive;
+              }
+              mockStore.saveState();
+            }
+            return [{ success: true }];
+          }
+
+          if (sqlText.includes('sp_renew_license')) {
+            const values = Array.isArray(queryObj?.values) ? queryObj.values : [];
+            const [licenseId, newEndDate, cost] = values;
+            const lic = mockStore.state.licenses.find((l) => l.id === licenseId);
+            if (lic) {
+              lic.endDate = new Date(newEndDate);
+              lic.expiresAt = new Date(newEndDate);
+              if (cost !== undefined && cost !== null) {
+                lic.cost = Number(cost);
+              }
+              lic.status = 'ACTIVE';
+              mockStore.saveState();
+            }
+            return [{ p_renewal_id: require('crypto').randomUUID() }];
+          }
+
           if (sqlText.includes('v_license_utilization')) {
             if (sqlText.toLowerCase().includes('count(')) {
               return [{ total: mockStore.state.licenses.length, count: mockStore.state.licenses.length }];
@@ -914,7 +993,10 @@ export function createMockPrismaClient(): any {
               const vendor = mockStore.state.vendors.find((v) => v.id === l.vendorId);
               const licType = mockStore.state.licenseTypes.find((lt) => lt.id === l.licenseTypeId);
               const totalSeats = Number(l.totalSeats || 1);
-              const usedSeats = Number(l.allocatedSeats ?? l.usedSeats ?? 0);
+              const activeAllocsForLic = mockStore.state.allocations.filter(
+                (a) => a.licenseId === l.id && a.status === 'ACTIVE'
+              ).length;
+              const usedSeats = Math.max(Number(l.allocatedSeats ?? l.usedSeats ?? 0), activeAllocsForLic);
               const endDate = l.endDate ?? l.expiresAt ?? null;
               const daysToExpiry = endDate
                 ? Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -944,29 +1026,32 @@ export function createMockPrismaClient(): any {
 
           if (sqlText.includes('v_expiring_licenses')) {
             return mockStore.state.licenses
-              .filter((l) => l.expiresAt)
-              .map((l) => ({
-                license_id: l.id,
-                tenant_id: l.tenantId,
-                license_name: l.licenseKey,
-                vendor_name: 'Enterprise Vendor',
-                total_seats: l.totalSeats,
-                active_allocations: l.allocatedSeats,
-                start_date: l.createdAt,
-                end_date: l.expiresAt,
-                days_left: Math.max(1, Math.round(((new Date(l.expiresAt as any).getTime() - Date.now()) / (24 * 3600 * 1000)))),
-                urgency_bucket: '60_DAYS',
-                cost: l.cost,
-                currency: 'USD',
-                auto_renew: l.autoRenew,
-              }));
+              .filter((l) => l.expiresAt || l.endDate)
+              .map((l) => {
+                const expDate = l.endDate || l.expiresAt;
+                return {
+                  license_id: l.id,
+                  tenant_id: l.tenantId,
+                  license_name: l.name || l.licenseKey,
+                  vendor_name: 'Enterprise Vendor',
+                  total_seats: l.totalSeats,
+                  active_allocations: l.allocatedSeats ?? 0,
+                  start_date: l.startDate || l.createdAt,
+                  end_date: expDate,
+                  days_left: Math.max(1, Math.round(((new Date(expDate as any).getTime() - Date.now()) / (24 * 3600 * 1000)))),
+                  urgency_bucket: '60_DAYS',
+                  cost: l.cost,
+                  currency: l.currency || 'USD',
+                  auto_renew: l.autoRenew,
+                };
+              });
           }
 
           if (sqlText.includes('v_vendor_spend')) {
             return mockStore.state.vendors.map((v) => ({
               vendor_id: v.id,
               vendor_name: v.name,
-              contact_email: v.supportEmail,
+              contact_email: v.supportEmail || v.contactEmail,
               license_count: 1,
               total_initial_cost: 750,
               total_renewal_cost: 0,
@@ -1005,7 +1090,36 @@ export function createMockPrismaClient(): any {
         };
       }
       if (prop === '$executeRaw') {
-        return async () => 1;
+        return async (queryObj: any) => {
+          const sqlText =
+            typeof queryObj === 'string'
+              ? queryObj
+              : Array.isArray(queryObj?.strings)
+              ? queryObj.strings.join(' ')
+              : String(queryObj || '');
+
+          if (sqlText.includes('sp_release_license_seat')) {
+            const values = Array.isArray(queryObj?.values) ? queryObj.values : [];
+            const [allocationId, revokedBy, reason] = values;
+            const alloc = mockStore.state.allocations.find((a) => a.id === allocationId);
+            if (alloc && alloc.status === 'ACTIVE') {
+              alloc.status = 'REVOKED';
+              alloc.revokedAt = new Date();
+              alloc.revokedBy = revokedBy || null;
+              alloc.revokeReason = reason || 'Administrative seat release';
+              const lic = mockStore.state.licenses.find((l) => l.id === alloc.licenseId);
+              if (lic) {
+                const remainingActive = mockStore.state.allocations.filter(
+                  (a) => a.licenseId === lic.id && a.status === 'ACTIVE'
+                ).length;
+                lic.allocatedSeats = remainingActive;
+                lic.usedSeats = remainingActive;
+              }
+              mockStore.saveState();
+            }
+          }
+          return 1;
+        };
       }
       if (prop === '$extends') {
         return () => createMockPrismaClient();

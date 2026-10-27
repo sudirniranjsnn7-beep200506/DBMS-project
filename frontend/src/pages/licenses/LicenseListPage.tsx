@@ -362,6 +362,8 @@ export const LicenseListPage: React.FC = () => {
       setAllocationNotes('');
       toast.success('License seat allocated successfully via sp_allocate_license_seat');
       queryClient.invalidateQueries({ queryKey: ['licenses'] });
+      queryClient.invalidateQueries({ queryKey: ['allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
     onError: (err: any) => {
       toast.error(err.message || 'Seat allocation failed');
