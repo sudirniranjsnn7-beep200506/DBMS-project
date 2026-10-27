@@ -591,6 +591,155 @@ export class AiService {
       processedAt: new Date().toISOString(),
     };
   }
+
+  /**
+   * Mode 4: AI Notification & License Email Composer
+   * Drafts a personalized, database-grounded email subject and body for Gmail delivery.
+   */
+  public async draftNotificationEmail(
+    prismaClient: any,
+    tenantId: string | null | undefined,
+    params: {
+      recipientName?: string;
+      recipientEmail?: string;
+      notificationTitle?: string;
+      notificationMessage?: string;
+      notificationType?: string;
+      licenseName?: string;
+      customContext?: string;
+    }
+  ) {
+    const snapshot = await this.getTenantSnapshot(prismaClient, tenantId);
+    const ai = getGeminiClient();
+
+    const matchedUser = snapshot.users.find(
+      (u) =>
+        (params.recipientEmail &&
+          u.email?.toLowerCase() === params.recipientEmail.toLowerCase()) ||
+        (params.recipientName &&
+          (u.fullName || u.name || '')
+            .toLowerCase()
+            .includes(params.recipientName.toLowerCase()))
+    );
+
+    const recipientName =
+      params.recipientName ||
+      matchedUser?.fullName ||
+      matchedUser?.name ||
+      params.recipientEmail?.split('@')[0] ||
+      'Team Member';
+    const recipientEmail =
+      params.recipientEmail ||
+      matchedUser?.email ||
+      snapshot.users[0]?.email ||
+      '';
+
+    const matchedLicense = snapshot.licenses.find(
+      (l) =>
+        params.licenseName &&
+        (l.name || l.licenseKey || '')
+          .toLowerCase()
+          .includes(params.licenseName.toLowerCase())
+    );
+
+    const fallbackSubject = params.notificationTitle
+      ? `[AssetVault] ${params.notificationTitle}`
+      : params.licenseName
+      ? `[AssetVault] License Seat Allocation & Update: ${params.licenseName}`
+      : `[AssetVault] Enterprise License & Asset Notification`;
+
+    const fallbackBody = [
+      `Hi ${recipientName},`,
+      '',
+      params.notificationMessage
+        ? `This is an official notification from your AssetVault workspace regarding the following update:\n\n"${params.notificationMessage}"`
+        : params.licenseName
+        ? `Your software license seat for "${params.licenseName}" has been provisioned and is active in AssetVault.`
+        : `Here is your latest AssetVault workspace notification and license status update.`,
+      '',
+      matchedLicense
+        ? `License Details:\n• License Name: ${matchedLicense.name || matchedLicense.licenseKey}\n• License Key: ${matchedLicense.licenseKey}\n• Seat Utilization: ${matchedLicense.allocatedSeats ?? matchedLicense.usedSeats ?? 1} / ${matchedLicense.totalSeats} seats\n• Status: ${matchedLicense.status || 'ACTIVE'}`
+        : `Workspace Summary:\n• Active Licenses: ${snapshot.licensesCount}\n• Seat Utilization: ${snapshot.allocatedSeats} / ${snapshot.totalSeats} seats (${snapshot.utilizationPct}%)`,
+      '',
+      params.customContext ? `Additional Notes:\n${params.customContext}\n` : '',
+      'Please sign in to your AssetVault dashboard if you have any questions or need further assistance.',
+      '',
+      'Best regards,',
+      'AssetVault License Operations Team',
+    ]
+      .filter((line, idx, arr) => !(line === '' && arr[idx - 1] === ''))
+      .join('\n');
+
+    try {
+      const prompt = JSON.stringify(
+        {
+          recipientName,
+          recipientEmail,
+          notificationType: params.notificationType || 'SYSTEM',
+          notificationTitle: params.notificationTitle || '',
+          notificationMessage: params.notificationMessage || '',
+          licenseName:
+            params.licenseName ||
+            matchedLicense?.name ||
+            matchedLicense?.licenseKey ||
+            '',
+          customContext: params.customContext || '',
+          tenantMetrics: {
+            assetsCount: snapshot.assetsCount,
+            licensesCount: snapshot.licensesCount,
+            allocatedSeats: snapshot.allocatedSeats,
+            totalSeats: snapshot.totalSeats,
+          },
+        },
+        null,
+        2
+      );
+
+      const response = await ai.models.generateContent({
+        model: FAST_MODEL_NAME,
+        contents: `Draft a concise, professional enterprise notification email based on this AssetVault context:\n${prompt}`,
+        config: {
+          thinkingConfig: {
+            thinkingLevel: ThinkingLevel.MINIMAL,
+          },
+          systemInstruction:
+            'You are the AssetVault Enterprise Communications Assistant. Generate a clear, professional plain-text email subject and body to notify a team member about their software license seat allocation, contract expiry alert, or compliance update. Return JSON with "subject" and "body".',
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              subject: {
+                type: Type.STRING,
+                description: 'Concise email subject line starting with [AssetVault]',
+              },
+              body: {
+                type: Type.STRING,
+                description: 'Well-formatted plain-text email body with greeting, specifics, and sign-off',
+              },
+            },
+            required: ['subject', 'body'],
+          },
+        },
+      });
+
+      const parsed = JSON.parse((response.text || '{}').trim());
+      return {
+        recipientName,
+        recipientEmail,
+        subject: parsed.subject || fallbackSubject,
+        body: parsed.body || fallbackBody,
+        generatedBy: FAST_MODEL_NAME,
+      };
+    } catch {
+      return {
+        recipientName,
+        recipientEmail,
+        subject: fallbackSubject,
+        body: fallbackBody,
+        generatedBy: 'local-template',
+      };
+    }
+  }
 }
 
 export const aiService = new AiService();

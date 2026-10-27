@@ -23,12 +23,14 @@ import {
   KeyRound,
   Calendar,
   Check,
+  Mail,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { Notification } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { NotificationStreamClient } from '../../services/notificationStream';
 import { Badge, Skeleton } from '../ui';
+import { openGmailModal } from './SendGmailModal';
 
 export interface NotificationPanelProps {
   isOpen: boolean;
@@ -487,6 +489,17 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             </div>
 
             <div className="flex items-center gap-1.5">
+              {/* Compose Gmail Notification Button */}
+              <button
+                type="button"
+                onClick={() => openGmailModal({})}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-800/50 rounded-lg transition-colors cursor-pointer"
+                title="Compose and send a notification email via Gmail"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Send Gmail</span>
+              </button>
+
               {/* Mark all as read button */}
               {counts.unread > 0 && (
                 <button
@@ -497,7 +510,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   title="Mark all notifications as read"
                 >
                   <CheckCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">Mark all as read</span>
+                  <span className="hidden sm:inline">Mark all</span>
                 </button>
               )}
 
@@ -680,6 +693,27 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                         <p className="text-xs text-slate-200 font-medium leading-relaxed select-text">
                           {n.message}
                         </p>
+
+                        {/* Action Bar: Send Notification via Gmail */}
+                        <div className="pt-1 flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openGmailModal({
+                                notificationTitle: n.title || meta.label,
+                                notificationMessage: n.message,
+                                notificationType: n.type,
+                                licenseName,
+                              });
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-indigo-950/60 hover:bg-indigo-900/70 text-indigo-300 border border-indigo-800/60 transition-colors cursor-pointer"
+                            title="Email this notification to a team member via Gmail"
+                          >
+                            <Mail className="w-3 h-3 text-indigo-400" />
+                            <span>Send via Gmail</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

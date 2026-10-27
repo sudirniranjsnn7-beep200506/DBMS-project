@@ -37,6 +37,11 @@ export class UserController {
     sendResponse(res, 200, user);
   });
 
+  public updateSelfProfile = asyncHandler(async (req: Request, res: Response) => {
+    const user = await userService.updateUser(req.prisma, req.user!.id as string, req.body);
+    sendResponse(res, 200, user);
+  });
+
   public updateStatus = asyncHandler(async (req: Request, res: Response) => {
     const { isActive } = req.body;
     const user = await userService.updateUserStatus(req.prisma, req.params.id as string, isActive);

@@ -23,6 +23,7 @@ export const createUserSchema = z
 export const updateUserSchema = z
   .object({
     fullName: z.string().min(2).max(100).trim().optional(),
+    email: z.string().email('Valid email address is required').toLowerCase().trim().optional(),
     avatarUrl: z.string().url().optional().nullable(),
   })
   .strip();

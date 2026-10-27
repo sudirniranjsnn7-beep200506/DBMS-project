@@ -22,9 +22,11 @@ import {
   DollarSign,
   Loader2,
   MessageSquare,
+  Mail,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { openGmailModal } from '../notifications/SendGmailModal';
 
 export interface ChatTurn {
   id: string;
@@ -404,6 +406,26 @@ export const GeminiChatWidget: React.FC = () => {
                       <>
                         <span>•</span>
                         <span className="font-mono text-indigo-400">{msg.modelUsed}</span>
+                      </>
+                    )}
+                    {!isUser && msg.id !== 'welcome-msg' && (
+                      <>
+                        <span>•</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openGmailModal({
+                              initialSubject: '[AssetVault] AI License & Compliance Report',
+                              initialBody: msg.text,
+                              notificationMessage: msg.text,
+                            })
+                          }
+                          className="inline-flex items-center gap-1 text-indigo-500 hover:text-indigo-400 font-semibold cursor-pointer"
+                          title="Email this AI insight via Gmail"
+                        >
+                          <Mail className="w-3 h-3" />
+                          <span>Email via Gmail</span>
+                        </button>
                       </>
                     )}
                   </div>

@@ -18,5 +18,6 @@ router.post('/optimize', aiController.runOptimizationAudit);
 router.post('/copilot', aiController.askCopilot);
 router.post('/chat', aiController.askCopilot);
 router.post('/extract-contract', aiController.extractContract);
+router.post('/draft-email', aiController.draftEmail);
 
 export default router;

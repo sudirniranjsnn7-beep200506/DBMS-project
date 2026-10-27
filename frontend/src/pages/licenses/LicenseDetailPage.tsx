@@ -45,6 +45,7 @@ import {
   Binary,
   File,
   Link as LinkIcon,
+  Mail,
 } from 'lucide-react';
 import { api, apiClient, getAccessToken } from '../../services/api';
 import { License, Asset, LicenseAllocation, LicenseRenewal, User, Vendor } from '../../types';
@@ -62,6 +63,7 @@ import {
 import { Modal } from '../../components/common/Modal';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { DatePicker } from '../../components/common/DatePicker';
+import { openGmailModal } from '../../components/notifications/SendGmailModal';
 
 // ==============================================================================
 // 1. Asset Type Configuration & Helpers
@@ -381,14 +383,29 @@ export const LicenseDetailPage: React.FC = () => {
   const allocateSeatMutation = useMutation({
     mutationFn: (payload: { userId: string; notes?: string }) =>
       api.post(`/licenses/${id}/allocate`, payload),
-    onSuccess: () => {
+    onSuccess: (_res, variables) => {
       toast.success('License seat allocated via sp_allocate_license_seat');
+      const allocatedUser = users.find((u) => u.id === variables.userId);
       setIsAllocateModalOpen(false);
       setSelectedUserId('');
       setAllocationNotes('');
       setUserSearchQuery('');
       queryClient.invalidateQueries({ queryKey: ['license', id] });
       queryClient.invalidateQueries({ queryKey: ['license', id, 'allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['licenses'] });
+      queryClient.invalidateQueries({ queryKey: ['allocations'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+      if (allocatedUser?.email) {
+        openGmailModal({
+          recipientName: allocatedUser.fullName || allocatedUser.email,
+          recipientEmail: allocatedUser.email,
+          licenseName: license?.name || 'Software License',
+          notificationTitle: `License Seat Allocated: ${license?.name || 'Software License'}`,
+          notificationMessage: `Your software license seat for "${license?.name || 'Software License'}" has been provisioned via sp_allocate_license_seat.${variables.notes ? ` Notes: ${variables.notes}` : ''}`,
+          notificationType: 'SYSTEM',
+        });
+      }
     },
     onError: (err: any) => {
       toast.error(err.message || 'Seat capacity exceeded or user already allocated');
@@ -1095,13 +1112,32 @@ export const LicenseDetailPage: React.FC = () => {
                           </td>
                           {canManage && (
                             <td className="py-3 px-4 text-right">
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => setReleaseAllocationTarget(alloc)}
-                              >
-                                Release
-                              </Button>
+                              <div className="inline-flex items-center justify-end gap-2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  iconLeft={<Mail className="w-3.5 h-3.5" />}
+                                  onClick={() =>
+                                    openGmailModal({
+                                      recipientName: userName,
+                                      recipientEmail: userEmail !== '—' ? userEmail : '',
+                                      licenseName: license?.name || 'Software License',
+                                      notificationTitle: `License Seat Allocated: ${license?.name || 'Software License'}`,
+                                      notificationMessage: `Your software license seat for "${license?.name || 'Software License'}" is active in AssetVault.`,
+                                      notificationType: 'SYSTEM',
+                                    })
+                                  }
+                                >
+                                  Email
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => setReleaseAllocationTarget(alloc)}
+                                >
+                                  Release
+                                </Button>
+                              </div>
                             </td>
                           )}
                         </tr>

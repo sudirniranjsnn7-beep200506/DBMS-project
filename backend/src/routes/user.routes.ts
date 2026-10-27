@@ -24,6 +24,9 @@ const router = Router();
 
 router.use(authenticate, loadUser);
 
+// Self-profile update (Permitted for any authenticated user)
+router.patch('/me/profile', tenantContext, validate(updateUserSchema), userController.updateSelfProfile);
+
 // List organization users (Requires users:read, forbidden for MEMBER)
 router.get('/', authorize('users:read'), tenantContext, userController.listUsers);
 router.get('/:id', authorize('users:read'), tenantContext, userController.getUserById);

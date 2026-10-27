@@ -17,11 +17,19 @@ export class AiController {
         tenantId: snapshot.tenantId,
         assetsCount: snapshot.assetsCount,
         licensesCount: snapshot.licensesCount,
+        usersCount: snapshot.usersCount,
         totalSeats: snapshot.totalSeats,
         allocatedSeats: snapshot.allocatedSeats,
         unallocatedSeats: snapshot.unallocatedSeats,
         utilizationPct: snapshot.utilizationPct,
         totalAnnualSpend: snapshot.totalAnnualSpend,
+        users: snapshot.users.map((u: any) => ({
+          id: u.id,
+          fullName: u.fullName || u.name || u.email,
+          email: u.email,
+          role: u.role,
+          department: u.department || 'Engineering',
+        })),
       });
     } catch (err: any) {
       return res.status(500).json({
@@ -82,6 +90,28 @@ export class AiController {
       return res.status(status).json({
         status: 'error',
         message: err?.message || 'Gemini Contract Extractor failed.',
+      });
+    }
+  };
+
+  public draftEmail = async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user?.tenantId || null;
+      const result = await aiService.draftNotificationEmail(req.prisma, tenantId, {
+        recipientName: req.body?.recipientName,
+        recipientEmail: req.body?.recipientEmail,
+        notificationTitle: req.body?.notificationTitle,
+        notificationMessage: req.body?.notificationMessage,
+        notificationType: req.body?.notificationType,
+        licenseName: req.body?.licenseName,
+        customContext: req.body?.customContext,
+      });
+      return sendResponse(res, 200, result);
+    } catch (err: any) {
+      const status = err?.statusCode || 500;
+      return res.status(status).json({
+        status: 'error',
+        message: err?.message || 'Failed to draft notification email.',
       });
     }
   };

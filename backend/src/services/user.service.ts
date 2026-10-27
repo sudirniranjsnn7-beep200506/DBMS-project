@@ -10,6 +10,7 @@ import { PaginationParams, formatPaginatedResponse } from '../utils/pagination.u
 import { hashPassword } from '../utils/hash.util';
 import { prisma } from '../config/prisma';
 import { Prisma } from '@prisma/client';
+import { mockStore } from '../config/mockStore';
 
 export class UserService {
   public async listUsers(
@@ -58,8 +59,32 @@ export class UserService {
   }
 
   public async updateUser(prismaClient: any, id: string, data: any) {
-    await this.getUserById(prismaClient, id);
-    return userRepository.update(prismaClient, id, data);
+    const existingUser = await this.getUserById(prismaClient, id);
+
+    if (data.email && data.email.toLowerCase() !== existingUser.email?.toLowerCase()) {
+      const duplicate = await prismaClient.user.findUnique({
+        where: { email: data.email.toLowerCase() },
+      });
+      if (duplicate && duplicate.id !== id) {
+        throw new ConflictError(`Another user with email '${data.email}' already exists.`);
+      }
+    }
+
+    const updated = await userRepository.update(prismaClient, id, data);
+
+    // Sync any in-memory allocations for this user so seat allocations reflect the updated email/name
+    for (const alloc of mockStore.state.allocations as any[]) {
+      if (alloc.userId === id) {
+        if (data.email) alloc.userEmail = data.email;
+        if (data.fullName) alloc.userName = data.fullName;
+        if (alloc.user) {
+          if (data.email) alloc.user.email = data.email;
+          if (data.fullName) alloc.user.fullName = data.fullName;
+        }
+      }
+    }
+
+    return updated;
   }
 
   public async updateUserStatus(prismaClient: any, id: string, isActive: boolean) {

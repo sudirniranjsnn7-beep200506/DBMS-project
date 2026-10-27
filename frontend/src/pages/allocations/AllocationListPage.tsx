@@ -11,6 +11,7 @@ import {
   Layers,
   ExternalLink,
   LogOut,
+  Mail,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { LicenseAllocation } from '../../types';
@@ -22,6 +23,7 @@ import { EmptyState } from '../../components/common/EmptyState';
 import { SearchInput } from '../../components/common/SearchInput';
 import { Pagination } from '../../components/common/Pagination';
 import { RoleGate } from '../../components/auth/RoleGate';
+import { openGmailModal } from '../../components/notifications/SendGmailModal';
 
 export const AllocationListPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -222,17 +224,37 @@ export const AllocationListPage: React.FC = () => {
                       <StatusBadge status={alloc.status} size="sm" />
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {alloc.status === 'ACTIVE' && (
-                        <RoleGate roles={['TENANT_ADMIN', 'ASSET_MANAGER']}>
-                          <button
-                            onClick={() => setReleaseAllocationId(alloc.id)}
-                            className="text-rose-600 dark:text-rose-400 font-medium hover:underline inline-flex items-center text-xs"
-                          >
-                            <LogOut className="w-3.5 h-3.5 mr-1" />
-                            Release Seat
-                          </button>
-                        </RoleGate>
-                      )}
+                      <div className="inline-flex items-center justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openGmailModal({
+                              recipientName: alloc.user?.fullName || 'Team Member',
+                              recipientEmail: alloc.user?.email || '',
+                              licenseName: alloc.license?.name || 'Software License',
+                              notificationTitle: `License Seat Allocated: ${alloc.license?.name || 'Enterprise License'}`,
+                              notificationMessage: `Your software license seat for "${alloc.license?.name || 'Enterprise License'}" (${alloc.license?.vendor?.name || 'Independent'}) is active as of ${new Date(alloc.allocatedAt).toLocaleDateString()}.`,
+                              notificationType: 'SYSTEM',
+                            })
+                          }
+                          className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline inline-flex items-center text-xs cursor-pointer"
+                          title="Send seat allocation email via Gmail"
+                        >
+                          <Mail className="w-3.5 h-3.5 mr-1" />
+                          Email User
+                        </button>
+                        {alloc.status === 'ACTIVE' && (
+                          <RoleGate roles={['TENANT_ADMIN', 'ASSET_MANAGER']}>
+                            <button
+                              onClick={() => setReleaseAllocationId(alloc.id)}
+                              className="text-rose-600 dark:text-rose-400 font-medium hover:underline inline-flex items-center text-xs cursor-pointer"
+                            >
+                              <LogOut className="w-3.5 h-3.5 mr-1" />
+                              Release Seat
+                            </button>
+                          </RoleGate>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
