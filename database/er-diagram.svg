@@ -1,0 +1,326 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1100" width="100%" height="100%" style="background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <linearGradient id="tenantGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <linearGradient id="userGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="assetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="licenseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="auditGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#be185d"/>
+    </linearGradient>
+    <linearGradient id="miscGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <filter id="boxShadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Header -->
+  <text x="40" y="45" font-size="24" font-weight="700" fill="#f8fafc">AssetVault: Entity-Relationship Architecture (19 Entities)</text>
+  <text x="40" y="70" font-size="13" fill="#94a3b8">PostgreSQL 16 | Third Normal Form (3NF) | Multi-Tenant Scoping | Crow's-Foot Relational Topology</text>
+
+  <!-- Legend -->
+  <g transform="translate(1080, 25)">
+    <rect width="480" height="55" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <rect x="15" y="15" width="12" height="12" rx="3" fill="#0284c7"/><text x="32" y="25" font-size="11" fill="#cbd5e1">Organization</text>
+    <rect x="115" y="15" width="12" height="12" rx="3" fill="#6366f1"/><text x="132" y="25" font-size="11" fill="#cbd5e1">Identity</text>
+    <rect x="190" y="15" width="12" height="12" rx="3" fill="#10b981"/><text x="207" y="25" font-size="11" fill="#cbd5e1">Asset Core</text>
+    <rect x="285" y="15" width="12" height="12" rx="3" fill="#f59e0b"/><text x="302" y="25" font-size="11" fill="#cbd5e1">License Core</text>
+    <rect x="390" y="15" width="12" height="12" rx="3" fill="#ec4899"/><text x="407" y="25" font-size="11" fill="#cbd5e1">Audit / Alerts</text>
+    <text x="15" y="45" font-size="10" fill="#94a3b8">PK: Primary Key | FK: Foreign Key | UK: Unique Key | Inherited Tenancy for child entities</text>
+  </g>
+
+  <!-- ================= COLUMN 1: Organization & Identity ================= -->
+  <!-- 1. PLANS -->
+  <g transform="translate(40, 100)" filter="url(#boxShadow)">
+    <rect width="250" height="140" rx="6" fill="#1e293b" stroke="#0284c7" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#tenantGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">PLANS (Lookup)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : INT [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#f8fafc">name : VARCHAR(50) [UK]</text>
+    <text x="12" y="84" font-size="11" fill="#cbd5e1">max_users : INT</text>
+    <text x="12" y="102" font-size="11" fill="#cbd5e1">max_assets : INT</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">monthly_price : NUMERIC(10,2)</text>
+  </g>
+
+  <!-- 2. TENANTS -->
+  <g transform="translate(40, 270)" filter="url(#boxShadow)">
+    <rect width="250" height="180" rx="6" fill="#1e293b" stroke="#0284c7" stroke-width="2"/>
+    <rect width="250" height="28" rx="6" fill="url(#tenantGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">TENANTS (Root Scope)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">plan_id : INT [FK->plans]</text>
+    <text x="12" y="84" font-size="11" fill="#f8fafc">name : VARCHAR(100)</text>
+    <text x="12" y="102" font-size="11" fill="#f8fafc">slug : VARCHAR(100) [UK]</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">status : ENUM (TRIAL,ACTIVE...)</text>
+    <text x="12" y="138" font-size="11" fill="#cbd5e1">contact_email : VARCHAR(255)</text>
+    <text x="12" y="156" font-size="11" fill="#94a3b8">created_at, updated_at</text>
+  </g>
+
+  <!-- 3. ROLES -->
+  <g transform="translate(40, 480)" filter="url(#boxShadow)">
+    <rect width="250" height="110" rx="6" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#userGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">ROLES (Lookup)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : INT [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#f8fafc">name : VARCHAR(50) [UK]</text>
+    <text x="12" y="84" font-size="11" fill="#cbd5e1">description : TEXT</text>
+  </g>
+
+  <!-- 4. USERS -->
+  <g transform="translate(40, 620)" filter="url(#boxShadow)">
+    <rect width="250" height="240" rx="6" fill="#1e293b" stroke="#6366f1" stroke-width="2"/>
+    <rect width="250" height="28" rx="6" fill="url(#userGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">USERS (Identity)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#818cf8">role_id : INT [FK->roles]</text>
+    <text x="12" y="102" font-size="11" fill="#f8fafc">email : VARCHAR(255) [UK]</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">full_name : VARCHAR(100)</text>
+    <text x="12" y="138" font-size="11" fill="#cbd5e1">password_hash : VARCHAR(255)</text>
+    <text x="12" y="156" font-size="11" fill="#cbd5e1">google_id : VARCHAR(100) [UK]</text>
+    <text x="12" y="174" font-size="11" fill="#cbd5e1">avatar_url, is_active</text>
+    <text x="12" y="192" font-size="11" fill="#94a3b8">last_login_at, created_at</text>
+  </g>
+
+  <!-- 5. REFRESH_TOKENS -->
+  <g transform="translate(40, 890)" filter="url(#boxShadow)">
+    <rect width="250" height="150" rx="6" fill="#1e293b" stroke="#6366f1" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#userGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">REFRESH_TOKENS</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#818cf8">user_id : UUID [FK->users]</text>
+    <text x="12" y="84" font-size="11" fill="#f8fafc">token_hash : VARCHAR(64) [UK]</text>
+    <text x="12" y="102" font-size="11" fill="#cbd5e1">expires_at, revoked_at</text>
+    <text x="12" y="120" font-size="11" fill="#94a3b8">user_agent, ip_address</text>
+  </g>
+
+  <!-- ================= COLUMN 2: Taxonomy & Vendors ================= -->
+  <!-- 6. VENDORS -->
+  <g transform="translate(340, 100)" filter="url(#boxShadow)">
+    <rect width="250" height="160" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#licenseGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">VENDORS (Suppliers)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#f8fafc">name : VARCHAR(100)</text>
+    <text x="12" y="102" font-size="11" fill="#cbd5e1">contact_email, website</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">support_phone</text>
+    <text x="12" y="138" font-size="10" fill="#94a3b8">UK: (tenant_id, name)</text>
+  </g>
+
+  <!-- 7. CATEGORIES -->
+  <g transform="translate(340, 290)" filter="url(#boxShadow)">
+    <rect width="250" height="170" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#assetGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">CATEGORIES (Hierarchy)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#34d399">parent_id : UUID [FK->self]</text>
+    <text x="12" y="102" font-size="11" fill="#f8fafc">name : VARCHAR(100)</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">description : TEXT</text>
+    <text x="12" y="138" font-size="10" fill="#94a3b8">UK: (tenant_id, name)</text>
+  </g>
+
+  <!-- 10. TAGS -->
+  <g transform="translate(340, 490)" filter="url(#boxShadow)">
+    <rect width="250" height="140" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#assetGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">TAGS (Vocabulary)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#f8fafc">name : VARCHAR(50)</text>
+    <text x="12" y="102" font-size="11" fill="#cbd5e1">color : VARCHAR(7)</text>
+    <text x="12" y="120" font-size="10" fill="#94a3b8">UK: (tenant_id, name)</text>
+  </g>
+
+  <!-- 11. ASSET_TAGS -->
+  <g transform="translate(340, 660)" filter="url(#boxShadow)">
+    <rect width="250" height="110" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#assetGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">ASSET_TAGS (M:N Resolver)</text>
+    <text x="12" y="48" font-size="11" fill="#34d399">asset_id : UUID [PK, FK->assets]</text>
+    <text x="12" y="68" font-size="11" fill="#34d399">tag_id : UUID [PK, FK->tags]</text>
+    <text x="12" y="88" font-size="10" fill="#94a3b8">Composite PK: (asset_id, tag_id)</text>
+  </g>
+
+  <!-- 16. ASSET_ACCESS_LOGS -->
+  <g transform="translate(340, 800)" filter="url(#boxShadow)">
+    <rect width="250" height="180" rx="6" fill="#1e293b" stroke="#ec4899" stroke-width="1.5"/>
+    <rect width="250" height="28" rx="6" fill="url(#auditGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">ASSET_ACCESS_LOGS</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : BIGINT [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#34d399">asset_id : UUID [FK->assets]</text>
+    <text x="12" y="84" font-size="11" fill="#818cf8">user_id : UUID [FK->users]</text>
+    <text x="12" y="102" font-size="11" fill="#fbbf24">license_id : UUID [FK->licenses]</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">action : ENUM (VIEW,DOWNLOAD...)</text>
+    <text x="12" y="138" font-size="11" fill="#94a3b8">ip_address, accessed_at</text>
+  </g>
+
+  <!-- ================= COLUMN 3: Digital Asset Core ================= -->
+  <!-- 8. ASSETS -->
+  <g transform="translate(640, 100)" filter="url(#boxShadow)">
+    <rect width="270" height="250" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+    <rect width="270" height="28" rx="6" fill="url(#assetGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">ASSETS (Catalog Core)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#34d399">category_id : UUID [FK->categories]</text>
+    <text x="12" y="102" font-size="11" fill="#818cf8">owner_id : UUID [FK->users]</text>
+    <text x="12" y="120" font-size="11" fill="#f8fafc">asset_code : VARCHAR(50)</text>
+    <text x="12" y="138" font-size="11" fill="#f8fafc">name : VARCHAR(200)</text>
+    <text x="12" y="156" font-size="11" fill="#cbd5e1">asset_type : ENUM (FONT,IMAGE...)</text>
+    <text x="12" y="174" font-size="11" fill="#cbd5e1">status : ENUM (DRAFT,ACTIVE...)</text>
+    <text x="12" y="192" font-size="11" fill="#94a3b8">created_at, updated_at, deleted_at</text>
+    <text x="12" y="210" font-size="10" fill="#94a3b8">UK: (tenant_id, asset_code)</text>
+  </g>
+
+  <!-- 9. ASSET_VERSIONS -->
+  <g transform="translate(640, 380)" filter="url(#boxShadow)">
+    <rect width="270" height="210" rx="6" fill="#1e293b" stroke="#10b981" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="6" fill="url(#assetGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">ASSET_VERSIONS</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#34d399">asset_id : UUID [FK->assets]</text>
+    <text x="12" y="84" font-size="11" fill="#f8fafc">version_no : INT</text>
+    <text x="12" y="102" font-size="11" fill="#cbd5e1">file_url : TEXT</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">file_size_bytes : BIGINT</text>
+    <text x="12" y="138" font-size="11" fill="#cbd5e1">checksum_sha256 : CHAR(64)</text>
+    <text x="12" y="156" font-size="11" fill="#818cf8">uploaded_by : UUID [FK->users]</text>
+    <text x="12" y="174" font-size="10" fill="#94a3b8">UK: (asset_id, version_no)</text>
+  </g>
+
+  <!-- 14. ASSET_LICENSES -->
+  <g transform="translate(640, 620)" filter="url(#boxShadow)">
+    <rect width="270" height="150" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="6" fill="url(#licenseGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">ASSET_LICENSES (M:N Resolver)</text>
+    <text x="12" y="48" font-size="11" fill="#34d399">asset_id : UUID [PK, FK->assets]</text>
+    <text x="12" y="68" font-size="11" fill="#fbbf24">license_id : UUID [PK, FK->licenses]</text>
+    <text x="12" y="88" font-size="11" fill="#818cf8">assigned_by : UUID [FK->users]</text>
+    <text x="12" y="108" font-size="11" fill="#94a3b8">assigned_at : TIMESTAMPTZ</text>
+    <text x="12" y="128" font-size="10" fill="#94a3b8">Composite PK: (asset_id, license_id)</text>
+  </g>
+
+  <!-- ================= COLUMN 4: License Core & Allocations ================= -->
+  <!-- 12. LICENSE_TYPES -->
+  <g transform="translate(960, 100)" filter="url(#boxShadow)">
+    <rect width="280" height="130" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="280" height="28" rx="6" fill="url(#licenseGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">LICENSE_TYPES (Lookup)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : INT [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#f8fafc">name : VARCHAR(50) [UK]</text>
+    <text x="12" y="84" font-size="11" fill="#cbd5e1">is_seat_based, is_expirable</text>
+    <text x="12" y="102" font-size="11" fill="#94a3b8">description : TEXT</text>
+  </g>
+
+  <!-- 13. LICENSES -->
+  <g transform="translate(960, 260)" filter="url(#boxShadow)">
+    <rect width="280" height="270" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+    <rect width="280" height="28" rx="6" fill="url(#licenseGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">LICENSES (Contract Core)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#fbbf24">vendor_id : UUID [FK->vendors]</text>
+    <text x="12" y="102" font-size="11" fill="#fbbf24">license_type_id : INT [FK->types]</text>
+    <text x="12" y="120" font-size="11" fill="#f8fafc">name : VARCHAR(200)</text>
+    <text x="12" y="138" font-size="11" fill="#f8fafc">license_key : VARCHAR(255)</text>
+    <text x="12" y="156" font-size="11" fill="#cbd5e1">total_seats : INT</text>
+    <text x="12" y="174" font-size="11" fill="#cbd5e1">start_date, end_date (NULLABLE)</text>
+    <text x="12" y="192" font-size="11" fill="#cbd5e1">cost : NUMERIC(12,2), currency</text>
+    <text x="12" y="210" font-size="11" fill="#cbd5e1">auto_renew, status, terms</text>
+    <text x="12" y="228" font-size="10" fill="#94a3b8">UK: (tenant_id, license_key)</text>
+  </g>
+
+  <!-- 15. LICENSE_ALLOCATIONS -->
+  <g transform="translate(960, 560)" filter="url(#boxShadow)">
+    <rect width="280" height="190" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="280" height="28" rx="6" fill="url(#licenseGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">LICENSE_ALLOCATIONS (M:N)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#fbbf24">license_id : UUID [FK->licenses]</text>
+    <text x="12" y="84" font-size="11" fill="#818cf8">user_id : UUID [FK->users]</text>
+    <text x="12" y="102" font-size="11" fill="#818cf8">allocated_by : UUID [FK->users]</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">allocated_at, released_at</text>
+    <text x="12" y="138" font-size="11" fill="#cbd5e1">status : ENUM (ACTIVE,RELEASED...)</text>
+    <text x="12" y="156" font-size="10" fill="#94a3b8">Partial UK: 1 ACTIVE per (license, user)</text>
+  </g>
+
+  <!-- 17. LICENSE_RENEWALS -->
+  <g transform="translate(960, 780)" filter="url(#boxShadow)">
+    <rect width="280" height="170" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect width="280" height="28" rx="6" fill="url(#licenseGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">LICENSE_RENEWALS</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#fbbf24">license_id : UUID [FK->licenses]</text>
+    <text x="12" y="84" font-size="11" fill="#818cf8">renewed_by : UUID [FK->users]</text>
+    <text x="12" y="102" font-size="11" fill="#cbd5e1">old_end_date, new_end_date</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">cost : NUMERIC(12,2), notes</text>
+    <text x="12" y="138" font-size="11" fill="#94a3b8">renewed_at : TIMESTAMPTZ</text>
+  </g>
+
+  <!-- ================= COLUMN 5: Audit & Notifications ================= -->
+  <!-- 18. AUDIT_LOGS -->
+  <g transform="translate(1290, 100)" filter="url(#boxShadow)">
+    <rect width="270" height="220" rx="6" fill="#1e293b" stroke="#ec4899" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="6" fill="url(#auditGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">AUDIT_LOGS (Immutable Trail)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : BIGINT [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#818cf8">user_id : UUID [FK->users]</text>
+    <text x="12" y="102" font-size="11" fill="#f8fafc">table_name : VARCHAR(100)</text>
+    <text x="12" y="120" font-size="11" fill="#f8fafc">record_id : UUID</text>
+    <text x="12" y="138" font-size="11" fill="#cbd5e1">action : ENUM (INSERT,UPDATE...)</text>
+    <text x="12" y="156" font-size="11" fill="#f472b6">old_data : JSONB</text>
+    <text x="12" y="174" font-size="11" fill="#f472b6">new_data : JSONB</text>
+    <text x="12" y="192" font-size="11" fill="#94a3b8">performed_at : TIMESTAMPTZ</text>
+  </g>
+
+  <!-- 19. NOTIFICATIONS -->
+  <g transform="translate(1290, 360)" filter="url(#boxShadow)">
+    <rect width="270" height="210" rx="6" fill="#1e293b" stroke="#ec4899" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="6" fill="url(#auditGrad)"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">NOTIFICATIONS (Alerts)</text>
+    <text x="12" y="48" font-size="11" fill="#f8fafc">id : UUID [PK]</text>
+    <text x="12" y="66" font-size="11" fill="#38bdf8">tenant_id : UUID [FK->tenants]</text>
+    <text x="12" y="84" font-size="11" fill="#818cf8">user_id : UUID [FK->users]</text>
+    <text x="12" y="102" font-size="11" fill="#fbbf24">license_id : UUID [FK->licenses]</text>
+    <text x="12" y="120" font-size="11" fill="#cbd5e1">type : ENUM (EXPIRY_30...)</text>
+    <text x="12" y="138" font-size="11" fill="#cbd5e1">message : TEXT</text>
+    <text x="12" y="156" font-size="11" fill="#cbd5e1">is_read : BOOLEAN</text>
+    <text x="12" y="174" font-size="11" fill="#94a3b8">created_at : TIMESTAMPTZ</text>
+  </g>
+
+  <!-- Flow / Tenancy Inheritance Annotation Card -->
+  <g transform="translate(1290, 600)" filter="url(#boxShadow)">
+    <rect width="270" height="230" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect width="270" height="28" rx="6" fill="#0369a1"/>
+    <text x="12" y="19" font-size="12" font-weight="700" fill="#ffffff">3NF MULTI-TENANCY RULE</text>
+    <text x="12" y="48" font-size="11" font-weight="600" fill="#38bdf8">Top-Level Tables (Direct tenant_id):</text>
+    <text x="12" y="66" font-size="10.5" fill="#f8fafc">• users, vendors, categories</text>
+    <text x="12" y="84" font-size="10.5" fill="#f8fafc">• assets, tags, licenses</text>
+    <text x="12" y="102" font-size="10.5" fill="#f8fafc">• audit_logs, notifications</text>
+    <text x="12" y="130" font-size="11" font-weight="600" fill="#34d399">Child Tables (Inherit Tenancy):</text>
+    <text x="12" y="148" font-size="10.5" fill="#cbd5e1">• asset_versions (via assets)</text>
+    <text x="12" y="166" font-size="10.5" fill="#cbd5e1">• asset_tags, asset_licenses</text>
+    <text x="12" y="184" font-size="10.5" fill="#cbd5e1">• license_allocations (via licenses)</text>
+    <text x="12" y="202" font-size="10.5" fill="#cbd5e1">• license_renewals, access_logs</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="40" y="1075" font-size="12" fill="#64748b">VIT BCSE307L Database Systems | AssetVault Multi-Tenant System Architecture | Fall 2026-27</text>
+</svg>

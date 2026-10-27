@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-seed/
+.env
+.env.*
+.env.local
+.env.production
+*.pem
+*.key
+*.log
+coverage/
+!.env.example

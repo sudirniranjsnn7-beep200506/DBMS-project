@@ -1,0 +1,76 @@
+name: Nightly Cloud Database Backup
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Every day at 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  cloud-backup:
+    name: Run Cloud pg_dump & Artifact Upload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install PostgreSQL Client Tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client openssl
+
+      - name: Execute pg_dump against Cloud Database
+        env:
+          DATABASE_DIRECT_URL: ${{ secrets.DATABASE_DIRECT_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          set +x
+          TARGET_URL="${DATABASE_DIRECT_URL:-$DATABASE_URL}"
+          if [ -z "$TARGET_URL" ]; then
+            echo "⚠️ Neither DATABASE_DIRECT_URL nor DATABASE_URL secret is configured in GitHub repository settings."
+            echo "ℹ️ Skipping automated cloud backup gracefully."
+            exit 0
+          fi
+
+          mkdir -p backups
+          TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
+          RAW_BACKUP="backups/assetvault_cloud_${TIMESTAMP}.dump"
+          FINAL_BACKUP="$RAW_BACKUP"
+
+          echo "📦 Initiating native PostgreSQL custom dump (-Fc)..."
+          if ! pg_dump "$TARGET_URL" \
+            --format=custom \
+            --no-owner \
+            --no-privileges \
+            --file="$RAW_BACKUP" 2> dump_error.log; then
+            echo "❌ pg_dump execution failed:"
+            sed -E 's#://[^@]+@#://***@#g' dump_error.log >&2
+            rm -f dump_error.log
+            exit 1
+          fi
+          rm -f dump_error.log
+
+          # Encrypt dump if encryption passphrase is provided (prevents credential leakage in uploaded artifacts)
+          if [ -n "$BACKUP_ENCRYPTION_PASSPHRASE" ]; then
+            echo "🔒 Encrypting database backup archive with AES-256-CBC..."
+            openssl enc -aes-256-cbc -salt -pbkdf2 \
+              -in "$RAW_BACKUP" \
+              -out "${RAW_BACKUP}.enc" \
+              -pass "env:BACKUP_ENCRYPTION_PASSPHRASE"
+            rm -f "$RAW_BACKUP"
+            FINAL_BACKUP="${RAW_BACKUP}.enc"
+          else
+            echo "⚠️ BACKUP_ENCRYPTION_PASSPHRASE secret not set. Recommend configuring secret to encrypt uploaded artifacts."
+          fi
+
+          echo "🔒 Generating SHA-256 integrity checksum..."
+          sha256sum "$FINAL_BACKUP" > "${FINAL_BACKUP}.sha256"
+          cat "${FINAL_BACKUP}.sha256"
+
+          echo "✅ Backup archive generated successfully: $FINAL_BACKUP"
+
+      - name: Upload Backup Artifact (7-Day Retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: assetvault-nightly-backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 7
+          if-no-files-found: warn

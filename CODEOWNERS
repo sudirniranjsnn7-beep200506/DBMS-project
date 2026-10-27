@@ -1,0 +1,18 @@
+# ==============================================================================
+# AssetVault: Code Owners
+# Defines repository maintainers and review requirements
+# ==============================================================================
+
+# Global Project Lead
+* @imkarthik567
+
+# Backend & Database Services
+/backend/ @imkarthik567
+/database/ @imkarthik567
+
+# Frontend Applications
+/frontend/ @imkarthik567
+
+# DevOps & Infrastructure
+/.github/ @imkarthik567
+/docker-compose*.yml @imkarthik567

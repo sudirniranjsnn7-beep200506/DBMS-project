@@ -1,0 +1,549 @@
+{
+  "info": {
+    "name": "AssetVault REST API Collection",
+    "_postman_id": "c1f8a845-6677-4b45-927b-b5d19488a03d",
+    "description": "Multi-Tenant Digital Asset & License Management System (BCSE307L Course Project). Covers all 16 domains, auth flows, seat allocations, checkout, CSV import/export, audit diff, and reporting.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenantId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "assetId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "licenseId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health & Docs",
+      "item": [
+        {
+          "name": "System Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "OpenAPI Spec JSON",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/docs.json"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Tenant Self-Registration",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenantName\": \"DesignCraft Studios\",\n  \"slug\": \"designcraft\",\n  \"contactEmail\": \"admin@designcraft.internal\",\n  \"adminFullName\": \"Karthik Admin\",\n  \"adminEmail\": \"admin@designcraft.internal\",\n  \"password\": \"SecurePass123!#\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register-tenant"
+          }
+        },
+        {
+          "name": "Email & Password Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@designcraft.internal\",\n  \"password\": \"SecurePass123!#\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh"
+          }
+        },
+        {
+          "name": "Current User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Logout Session",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Plans",
+      "item": [
+        {
+          "name": "List Plans",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/plans"
+          }
+        },
+        {
+          "name": "Create Plan (Super Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Enterprise\",\n  \"maxUsers\": 250,\n  \"maxAssets\": 10000,\n  \"monthlyPrice\": 499.00,\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/plans"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Tenants",
+      "item": [
+        {
+          "name": "List All Tenants (Super Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/tenants"
+          }
+        },
+        {
+          "name": "Get Tenant By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/tenants/{{tenantId}}"
+          }
+        },
+        {
+          "name": "Suspend Tenant",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\"\n}"
+            },
+            "url": "{{baseUrl}}/tenants/{{tenantId}}/status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Users",
+      "item": [
+        {
+          "name": "List Organization Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/users?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create Member User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"designer@designcraft.internal\",\n  \"fullName\": \"Dev Designer\",\n  \"roleName\": \"MEMBER\",\n  \"password\": \"User#Secure2026\"\n}"
+            },
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "Change User Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleName\": \"ASSET_MANAGER\",\n  \"reason\": \"Promoted to lead asset steward\"\n}"
+            },
+            "url": "{{baseUrl}}/users/{{userId}}/role"
+          }
+        },
+        {
+          "name": "List User Seat Allocations",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/users/{{userId}}/allocations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Digital Assets",
+      "item": [
+        {
+          "name": "List Assets Catalog",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/assets?page=1&limit=10&sort=asset_name&order=asc"
+          }
+        },
+        {
+          "name": "Create Asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Helvetica Neue Pro Font Family\",\n  \"assetCode\": \"FNT-HLV-001\",\n  \"assetType\": \"FONT\",\n  \"description\": \"Corporate brand typeface OTF package\"\n}"
+            },
+            "url": "{{baseUrl}}/assets"
+          }
+        },
+        {
+          "name": "Export Assets to CSV",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/assets/export"
+          }
+        },
+        {
+          "name": "Bulk Import Assets CSV",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "text/csv" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "\"asset_code\",\"name\",\"asset_type\",\"description\"\n\"FNT-001\",\"Roboto OTF\",\"FONT\",\"Google font package\"\n\"IMG-001\",\"Brand Hero SVG\",\"IMAGE\",\"Main banner illustration\""
+            },
+            "url": "{{baseUrl}}/assets/bulk-import"
+          }
+        },
+        {
+          "name": "Upload New Asset Version",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fileUrl\": \"https://storage.assetvault.internal/files/fnt-v2.zip\",\n  \"fileSizeBytes\": 12450000,\n  \"checksumSha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\n  \"changeNotes\": \"Added italic and bold weights\"\n}"
+            },
+            "url": "{{baseUrl}}/assets/{{assetId}}/versions"
+          }
+        },
+        {
+          "name": "Checkout Asset (Seat-Gated)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/assets/{{assetId}}/checkout"
+          }
+        },
+        {
+          "name": "Checkin Asset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/assets/{{assetId}}/checkin"
+          }
+        },
+        {
+          "name": "Download Asset (Seat-Gated)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/assets/{{assetId}}/download"
+          }
+        },
+        {
+          "name": "Asset Access Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/assets/{{assetId}}/access-logs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Licenses & Allocations",
+      "item": [
+        {
+          "name": "List Licenses (Masked Keys)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/licenses?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Create License",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Adobe Creative Cloud Teams\",\n  \"vendorId\": \"00000000-0000-0000-0000-000000000001\",\n  \"licenseTypeId\": 1,\n  \"licenseKey\": \"ADOBE-CC-2026-X79K-8892\",\n  \"totalSeats\": 15,\n  \"cost\": 1500.00,\n  \"currency\": \"USD\",\n  \"startDate\": \"2026-01-01\",\n  \"endDate\": \"2026-12-31\",\n  \"autoRenew\": true\n}"
+            },
+            "url": "{{baseUrl}}/licenses"
+          }
+        },
+        {
+          "name": "Get License (Reveals Key to Admin + Writes Audit Log)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/licenses/{{licenseId}}"
+          }
+        },
+        {
+          "name": "Renew License (sp_renew_license)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newEndDate\": \"2027-12-31\",\n  \"cost\": 1600.00,\n  \"notes\": \"Annual enterprise extension negotiated with vendor\"\n}"
+            },
+            "url": "{{baseUrl}}/licenses/{{licenseId}}/renew"
+          }
+        },
+        {
+          "name": "Allocate Seat (sp_allocate_license_seat)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/licenses/{{licenseId}}/allocate"
+          }
+        },
+        {
+          "name": "Release Seat (sp_release_license_seat)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allocationId\": \"00000000-0000-0000-0000-000000000001\",\n  \"reason\": \"Project completed\"\n}"
+            },
+            "url": "{{baseUrl}}/licenses/{{licenseId}}/release"
+          }
+        },
+        {
+          "name": "List License Seat Holders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/licenses/{{licenseId}}/allocations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Notifications & Alerts",
+      "item": [
+        {
+          "name": "List User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/notifications"
+          }
+        },
+        {
+          "name": "Mark All Read",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/notifications/read-all"
+          }
+        },
+        {
+          "name": "Trigger Automated Expiry Check (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lookaheadDays\": 30\n}"
+            },
+            "url": "{{baseUrl}}/notifications/run-expiry-check"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Audit Ledger",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/audit-logs?page=1&limit=20"
+          }
+        },
+        {
+          "name": "Get Audit Change Diff",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/audit-logs/1/diff"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Reports & Analytics",
+      "item": [
+        {
+          "name": "Tenant Dashboard KPIs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/dashboard"
+          }
+        },
+        {
+          "name": "License Utilization View",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/license-utilization"
+          }
+        },
+        {
+          "name": "Expiring Licenses View",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/expiring-licenses"
+          }
+        },
+        {
+          "name": "Vendor Spend View",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/vendor-spend"
+          }
+        },
+        {
+          "name": "Monthly Running Total Spend",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/spend-by-month"
+          }
+        },
+        {
+          "name": "Top Downloaded Assets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/top-assets"
+          }
+        },
+        {
+          "name": "Unlicensed Assets Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/unlicensed-assets"
+          }
+        },
+        {
+          "name": "Monthly Access Trends (Materialized View)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/reports/access-trend"
+          }
+        },
+        {
+          "name": "Super Admin Platform Overview",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{baseUrl}}/platform/overview"
+          }
+        }
+      ]
+    }
+  ]
+}

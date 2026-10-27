@@ -1,0 +1,510 @@
+// ==============================================================================
+// AssetVault Prisma Schema (PostgreSQL 16)
+// Course: VIT, BCSE307L Database Systems (Fall 2026-27)
+// Strictly derived from /database/er-diagram.md and /database/data-dictionary.md
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==============================================================================
+// ENUMS
+// ==============================================================================
+
+enum TenantStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+
+  @@map("tenant_status")
+}
+
+enum AssetType {
+  FONT
+  IMAGE
+  VIDEO
+  AUDIO
+  SOFTWARE
+  DATASET
+  DOCUMENT
+  OTHER
+
+  @@map("asset_type")
+}
+
+enum AssetStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+
+  @@map("asset_status")
+}
+
+enum LicenseStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  CANCELLED
+
+  @@map("license_status")
+}
+
+enum AllocationStatus {
+  ACTIVE
+  RELEASED
+  REVOKED
+
+  @@map("allocation_status")
+}
+
+enum AccessAction {
+  VIEW
+  DOWNLOAD
+  CHECKOUT
+  CHECKIN
+
+  @@map("access_action")
+}
+
+enum AuditAction {
+  INSERT
+  UPDATE
+  DELETE
+
+  @@map("audit_action")
+}
+
+enum NotificationType {
+  EXPIRY_30
+  EXPIRY_15
+  EXPIRY_7
+  EXPIRED
+  OVER_ALLOCATION
+  SYSTEM
+
+  @@map("notification_type")
+}
+
+// ==============================================================================
+// 1. Model: Plan (SaaS Subscription Tiers)
+// ==============================================================================
+model Plan {
+  id           Int     @id @default(autoincrement())
+  name         String  @unique @db.VarChar(50)
+  maxUsers     Int     @map("max_users")
+  maxAssets    Int     @map("max_assets")
+  monthlyPrice Decimal @default(0.00) @map("monthly_price") @db.Decimal(10, 2)
+  isActive     Boolean @default(true) @map("is_active")
+
+  tenants Tenant[]
+
+  @@map("plans")
+}
+
+// ==============================================================================
+// 2. Model: Tenant (Root Multi-Tenant Organization Boundary)
+// ==============================================================================
+model Tenant {
+  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  planId       Int          @map("plan_id")
+  name         String       @db.VarChar(100)
+  slug         String       @unique @db.VarChar(100)
+  status       TenantStatus @default(TRIAL)
+  contactEmail String       @map("contact_email") @db.VarChar(255)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  plan          Plan           @relation(fields: [planId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  users         User[]
+  vendors       Vendor[]
+  categories    Category[]
+  tags          Tag[]
+  assets        Asset[]
+  licenses      License[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+
+  @@index([planId])
+  @@map("tenants")
+}
+
+// ==============================================================================
+// 3. Model: Role (RBAC Lookup Table)
+// ==============================================================================
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(50)
+  description String? @db.Text
+
+  users User[]
+
+  @@map("roles")
+}
+
+// ==============================================================================
+// 4. Model: User (Unified Directory Across All Tenants & Admins)
+// ==============================================================================
+model User {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String?   @map("tenant_id") @db.Uuid
+  roleId       Int       @map("role_id")
+  email        String    @unique @db.VarChar(255)
+  fullName     String    @map("full_name") @db.VarChar(100)
+  passwordHash String?   @map("password_hash") @db.VarChar(255)
+  googleId     String?   @unique @map("google_id") @db.VarChar(100)
+  avatarUrl    String?   @map("avatar_url") @db.Text
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role   Role    @relation(fields: [roleId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  refreshTokens         RefreshToken[]
+  ownedAssets           Asset[]             @relation("AssetOwner")
+  uploadedVersions      AssetVersion[]      @relation("VersionUploader")
+  assignedAssetLicenses AssetLicense[]      @relation("AssetLicenseAssigner")
+  allocatedLicenses     LicenseAllocation[] @relation("UserAllocations")
+  grantedAllocations    LicenseAllocation[] @relation("AllocationGranter")
+  authorizedRenewals    LicenseRenewal[]    @relation("RenewalAuthorizer")
+  accessLogs            AssetAccessLog[]
+  performedAudits       AuditLog[]
+  notifications         Notification[]
+
+  @@index([tenantId])
+  @@index([roleId])
+  @@map("users")
+}
+
+// ==============================================================================
+// 5. Model: RefreshToken (Session State Management)
+// ==============================================================================
+model RefreshToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  userAgent String?   @map("user_agent") @db.Text
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ==============================================================================
+// 6. Model: Vendor (Commercial Software & Asset Suppliers)
+// ==============================================================================
+model Vendor {
+  id           String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String  @map("tenant_id") @db.Uuid
+  name         String  @db.VarChar(100)
+  contactEmail String? @map("contact_email") @db.VarChar(255)
+  website      String? @db.VarChar(255)
+  supportPhone String? @map("support_phone") @db.VarChar(50)
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  licenses License[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("vendors")
+}
+
+// ==============================================================================
+// 7. Model: Category (Hierarchical Classification Tree)
+// ==============================================================================
+model Category {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String  @map("tenant_id") @db.Uuid
+  parentId    String? @map("parent_id") @db.Uuid
+  name        String  @db.VarChar(100)
+  description String? @db.Text
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  children Category[] @relation("CategoryHierarchy")
+  assets   Asset[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([parentId])
+  @@map("categories")
+}
+
+// ==============================================================================
+// 8. Model: Asset (Digital Asset Repository Core)
+// ==============================================================================
+model Asset {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String      @map("tenant_id") @db.Uuid
+  categoryId  String?     @map("category_id") @db.Uuid
+  ownerId     String      @map("owner_id") @db.Uuid
+  assetCode   String      @map("asset_code") @db.VarChar(50)
+  name        String      @db.VarChar(200)
+  description String?     @db.Text
+  assetType   AssetType   @map("asset_type")
+  status      AssetStatus @default(DRAFT)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt   DateTime?   @map("deleted_at") @db.Timestamptz
+
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  category      Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  owner         User             @relation("AssetOwner", fields: [ownerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  versions      AssetVersion[]
+  assetTags     AssetTag[]
+  assetLicenses AssetLicense[]
+  accessLogs    AssetAccessLog[]
+
+  @@unique([tenantId, assetCode])
+  @@index([tenantId, status])
+  @@index([categoryId])
+  @@index([ownerId])
+  @@map("assets")
+}
+
+// ==============================================================================
+// 9. Model: AssetVersion (File Iterations & SHA-256 Hashes)
+// ==============================================================================
+model AssetVersion {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assetId        String   @map("asset_id") @db.Uuid
+  versionNo      Int      @map("version_no")
+  fileUrl        String   @map("file_url") @db.Text
+  fileSizeBytes  BigInt   @map("file_size_bytes")
+  checksumSha256 String   @map("checksum_sha256") @db.Char(64)
+  changeNotes    String?  @map("change_notes") @db.Text
+  uploadedBy     String?  @map("uploaded_by") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  asset    Asset @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  uploader User? @relation("VersionUploader", fields: [uploadedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([assetId, versionNo])
+  @@index([assetId, versionNo(sort: Desc)])
+  @@map("asset_versions")
+}
+
+// ==============================================================================
+// 10. Model: Tag (Dynamic Metadata Vocabulary)
+// ==============================================================================
+model Tag {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId String @map("tenant_id") @db.Uuid
+  name     String @db.VarChar(50)
+  color    String @default("#6366f1") @db.VarChar(7)
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  assetTags AssetTag[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("tags")
+}
+
+// ==============================================================================
+// 11. Model: AssetTag (M:N Resolver for Assets & Tags)
+// ==============================================================================
+model AssetTag {
+  assetId String @map("asset_id") @db.Uuid
+  tagId   String @map("tag_id") @db.Uuid
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([assetId, tagId])
+  @@index([tagId])
+  @@map("asset_tags")
+}
+
+// ==============================================================================
+// 12. Model: LicenseType (Licensing Model Lookup)
+// ==============================================================================
+model LicenseType {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(50)
+  isSeatBased Boolean @default(true) @map("is_seat_based")
+  isExpirable Boolean @default(true) @map("is_expirable")
+  description String? @db.Text
+
+  licenses License[]
+
+  @@map("license_types")
+}
+
+// ==============================================================================
+// 13. Model: License (Software Contracts & Capacity Matrix)
+// ==============================================================================
+model License {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId      String        @map("tenant_id") @db.Uuid
+  vendorId      String        @map("vendor_id") @db.Uuid
+  licenseTypeId Int           @map("license_type_id")
+  name          String        @db.VarChar(200)
+  licenseKey    String        @map("license_key") @db.VarChar(255)
+  totalSeats    Int           @map("total_seats")
+  startDate     DateTime      @map("start_date") @db.Date
+  endDate       DateTime?     @map("end_date") @db.Date
+  cost          Decimal       @default(0.00) @map("cost") @db.Decimal(12, 2)
+  currency      String        @default("USD") @db.Char(3)
+  autoRenew     Boolean       @default(false) @map("auto_renew")
+  status        LicenseStatus @default(ACTIVE)
+  terms         String?       @db.Text
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  deletedAt     DateTime?     @map("deleted_at") @db.Timestamptz
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vendor        Vendor              @relation(fields: [vendorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  licenseType   LicenseType         @relation(fields: [licenseTypeId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  assetLicenses AssetLicense[]
+  allocations   LicenseAllocation[]
+  renewals      LicenseRenewal[]
+  accessLogs    AssetAccessLog[]
+  notifications Notification[]
+
+  @@unique([tenantId, licenseKey])
+  @@index([tenantId, status])
+  @@index([vendorId])
+  @@index([licenseTypeId])
+  @@index([endDate])
+  @@map("licenses")
+}
+
+// ==============================================================================
+// 14. Model: AssetLicense (M:N Resolver for Assets & Licenses)
+// ==============================================================================
+model AssetLicense {
+  assetId    String   @map("asset_id") @db.Uuid
+  licenseId  String   @map("license_id") @db.Uuid
+  assignedBy String?  @map("assigned_by") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz
+
+  asset    Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  license  License @relation(fields: [licenseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  assigner User?   @relation("AssetLicenseAssigner", fields: [assignedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@id([assetId, licenseId])
+  @@index([licenseId])
+  @@map("asset_licenses")
+}
+
+// ==============================================================================
+// 15. Model: LicenseAllocation (M:N User Seat Entitlements)
+// ==============================================================================
+model LicenseAllocation {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  licenseId   String           @map("license_id") @db.Uuid
+  userId      String           @map("user_id") @db.Uuid
+  allocatedBy String?          @map("allocated_by") @db.Uuid
+  allocatedAt DateTime         @default(now()) @map("allocated_at") @db.Timestamptz
+  releasedAt  DateTime?        @map("released_at") @db.Timestamptz
+  status      AllocationStatus @default(ACTIVE)
+  notes       String?          @db.Text
+
+  license   License @relation(fields: [licenseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user      User    @relation("UserAllocations", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  allocator User?   @relation("AllocationGranter", fields: [allocatedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([licenseId])
+  @@index([userId])
+  @@map("license_allocations")
+}
+
+// ==============================================================================
+// 16. Model: AssetAccessLog (Access Activity Audit)
+// ==============================================================================
+model AssetAccessLog {
+  id         BigInt       @id @default(autoincrement())
+  assetId    String       @map("asset_id") @db.Uuid
+  userId     String?      @map("user_id") @db.Uuid
+  licenseId  String?      @map("license_id") @db.Uuid
+  action     AccessAction
+  ipAddress  String?      @map("ip_address") @db.VarChar(45)
+  accessedAt DateTime     @default(now()) @map("accessed_at") @db.Timestamptz
+
+  asset   Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  license License? @relation(fields: [licenseId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([assetId, accessedAt(sort: Desc)])
+  @@index([userId])
+  @@map("asset_access_logs")
+}
+
+// ==============================================================================
+// 17. Model: LicenseRenewal (Contract Term Renewal Ledger)
+// ==============================================================================
+model LicenseRenewal {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  licenseId  String   @map("license_id") @db.Uuid
+  renewedBy  String?  @map("renewed_by") @db.Uuid
+  oldEndDate DateTime @map("old_end_date") @db.Date
+  newEndDate DateTime @map("new_end_date") @db.Date
+  cost       Decimal  @default(0.00) @map("cost") @db.Decimal(12, 2)
+  notes      String?  @db.Text
+  renewedAt  DateTime @default(now()) @map("renewed_at") @db.Timestamptz
+
+  license License @relation(fields: [licenseId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  renewer User?   @relation("RenewalAuthorizer", fields: [renewedBy], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([licenseId, renewedAt(sort: Desc)])
+  @@map("license_renewals")
+}
+
+// ==============================================================================
+// 18. Model: AuditLog (Immutable Tamper-Evident Ledger with JSONB Diffs)
+// ==============================================================================
+model AuditLog {
+  id          BigInt      @id @default(autoincrement())
+  tenantId    String?     @map("tenant_id") @db.Uuid
+  userId      String?     @map("user_id") @db.Uuid
+  tableName   String      @map("table_name") @db.VarChar(100)
+  recordId    String      @map("record_id") @db.Uuid
+  action      AuditAction
+  oldData     Json?       @map("old_data")
+  newData     Json?       @map("new_data")
+  performedAt DateTime    @default(now()) @map("performed_at") @db.Timestamptz
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([tenantId, performedAt(sort: Desc)])
+  @@index([tableName, recordId])
+  @@map("audit_logs")
+}
+
+// ==============================================================================
+// 19. Model: Notification (System & License Expiration Alerts)
+// ==============================================================================
+model Notification {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String           @map("tenant_id") @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  licenseId String?          @map("license_id") @db.Uuid
+  type      NotificationType
+  message   String           @db.Text
+  isRead    Boolean          @default(false) @map("is_read")
+  emailSent Boolean          @default(false) @map("email_sent")
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  license License? @relation(fields: [licenseId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([tenantId])
+  @@index([userId, isRead])
+  @@map("notifications")
+}

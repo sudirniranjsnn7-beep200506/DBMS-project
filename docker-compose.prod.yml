@@ -1,0 +1,65 @@
+version: '3.8'
+
+# ==============================================================================
+# AssetVault: Production Docker Compose Overrides (docker-compose.prod.yml)
+# Pulls tagged Docker Hub images, configures resource limits, and enables rotation
+# ==============================================================================
+
+services:
+  db:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  api:
+    image: ${DOCKERHUB_USERNAME:-assetvault}/assetvault-api:1.0.0
+    restart: always
+    build: !reset null
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1024M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  worker:
+    image: ${DOCKERHUB_USERNAME:-assetvault}/assetvault-api:1.0.0
+    restart: always
+    build: !reset null
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+  web:
+    image: ${DOCKERHUB_USERNAME:-assetvault}/assetvault-web:1.0.0
+    restart: always
+    build: !reset null
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"

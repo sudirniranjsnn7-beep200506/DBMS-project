@@ -1,0 +1,108 @@
+# ==============================================================================
+# AssetVault: Render Blueprint Specification
+# Service: Native Node.js Web Service (backend)
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================================
+
+services:
+  - type: web
+    name: assetvault-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: npm install --include=dev && npx prisma generate && npx prisma migrate deploy && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+    envVars:
+      # --- Node Environment ---
+      - key: NODE_VERSION
+        value: 20.12.2
+      - key: NODE_ENV
+        value: production
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
+      - key: PORT
+        value: 5000
+
+      # --- Background Worker & Job Execution ---
+      - key: ENABLE_IN_PROCESS_WORKER
+        value: "true"
+      - key: RUN_WORKER_IN_API
+        value: "true"
+
+      # --- Cookie & Session Security ---
+      - key: COOKIE_SAMESITE
+        value: "lax"
+      - key: RATE_LIMIT_WINDOW_MS
+        value: "900000"
+      - key: RATE_LIMIT_MAX
+        value: "100"
+
+      # --- Database Connection URLs (Supabase / Neon / Cloud Postgres) ---
+      # Set DATABASE_URL to Transaction Pooler URL (e.g. port 6543 with ?pgbouncer=true)
+      - key: DATABASE_URL
+        sync: false
+      # Set DIRECT_URL to Direct Connection URL (port 5432) for Prisma Migrations
+      - key: DIRECT_URL
+        sync: false
+      - key: MIGRATE_DATABASE_URL
+        sync: false
+
+      # --- Client & CORS Allowed Origins ---
+      # e.g., https://assetvault.vercel.app,https://yourdomain.duckdns.org
+      - key: CLIENT_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+
+      # --- Cryptographic Secrets (Render will prompt or auto-generate) ---
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: "15m"
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: "7d"
+      - key: METRICS_BEARER_TOKEN
+        generateValue: true
+
+      # --- Google OAuth Credentials (Optional) ---
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+
+      # --- SMTP Transactional Email Settings (Optional / Ethereal) ---
+      - key: SMTP_HOST
+        value: smtp.ethereal.email
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        value: AssetVault <notifications@assetvault.io>
+      - key: SMTP_SECURE
+        value: "false"
+
+      # --- Initial Super Admin Account & Baseline Seeding ---
+      - key: SUPER_ADMIN_EMAIL
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: SUPER_ADMIN_NAME
+        value: "Global Super Administrator"
+      # Run idempotent baseline seed on startup; demo tenants remain disabled.
+      - key: RUN_SEED
+        value: "true"
+      - key: SEED_DEMO
+        value: "false"

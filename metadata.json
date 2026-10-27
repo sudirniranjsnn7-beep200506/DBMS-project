@@ -1,0 +1,13 @@
+{
+  "name": "AssetVault",
+  "description": "Multi-Tenant Digital Asset & License Management System",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

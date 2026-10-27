@@ -1,0 +1,28 @@
+name: Render Free-Tier Keepalive Ping
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # Every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Keepalive Health Ping
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping API Health Endpoint
+        env:
+          API_URL: ${{ secrets.RENDER_API_URL || 'https://assetvault-api.onrender.com' }}
+        run: |
+          set +x
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          SAFE_URL=$(echo "$API_URL" | sed -E 's#://[^@]+@#://***@#')
+          echo "[$TIMESTAMP] Sending keepalive ping to $SAFE_URL/api/health..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$API_URL/api/health" || echo "000")
+          echo "[$TIMESTAMP] Response status code: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "✅ AssetVault API is warm and healthy."
+          else
+            echo "⚠️ Health check returned HTTP $HTTP_STATUS (service may be waking up from sleep)"
+          fi

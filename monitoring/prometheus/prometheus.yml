@@ -1,0 +1,24 @@
+# ==============================================================================
+# AssetVault: Prometheus Scrape Configuration
+# Scrapes AssetVault API on /metrics every 15s with Bearer Token Authorization
+# ==============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: 'assetvault-api'
+    metrics_path: '/metrics'
+    scheme: 'http'
+    static_configs:
+      - targets: ['api:5000']
+    authorization:
+      type: Bearer
+      credentials: 'assetvault-metrics-token-2026'
+
+  - job_name: 'prometheus'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['localhost:9090']

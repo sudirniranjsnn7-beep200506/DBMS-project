@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 640" width="100%" height="100%" style="background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="barGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="barGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="barGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="barGrad4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#7e22ce"/>
+    </linearGradient>
+    <linearGradient id="barGrad5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="barGrad6" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-10%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="40" y="45" font-size="22" font-weight="700" fill="url(#headerGrad)">AssetVault: 8-Week Project Timeline</text>
+  <text x="40" y="70" font-size="13" fill="#94a3b8">BCSE307L Database Systems | Oct 19, 2026 – Dec 13, 2026 | Multi-Tenant Digital Asset &amp; License Management</text>
+
+  <!-- Timeline Grid Header Container -->
+  <rect x="40" y="95" width="1040" height="40" rx="6" fill="#1e293b"/>
+  <text x="60" y="120" font-size="12" font-weight="600" fill="#cbd5e1">WBS TASK NAME</text>
+  <text x="210" y="120" font-size="12" font-weight="600" fill="#94a3b8">OWNER</text>
+
+  <!-- Week Columns (Oct 19 - Dec 13, 8 Weeks, 95px per week) -->
+  <!-- Col 1: W1 Oct 19 -->
+  <line x1="320" y1="95" x2="320" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="345" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W1 (Oct 19)</text>
+
+  <!-- Col 2: W2 Oct 26 -->
+  <line x1="415" y1="95" x2="415" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="440" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W2 (Oct 26)</text>
+
+  <!-- Col 3: W3 Nov 02 -->
+  <line x1="510" y1="95" x2="510" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="535" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W3 (Nov 02)</text>
+
+  <!-- Col 4: W4 Nov 09 -->
+  <line x1="605" y1="95" x2="605" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="630" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W4 (Nov 09)</text>
+
+  <!-- Col 5: W5 Nov 16 -->
+  <line x1="700" y1="95" x2="700" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="725" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W5 (Nov 16)</text>
+
+  <!-- Col 6: W6 Nov 23 -->
+  <line x1="795" y1="95" x2="795" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="820" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W6 (Nov 23)</text>
+
+  <!-- Col 7: W7 Nov 30 -->
+  <line x1="890" y1="95" x2="890" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="915" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W7 (Nov 30)</text>
+
+  <!-- Col 8: W8 Dec 07 -->
+  <line x1="985" y1="95" x2="985" y2="600" stroke="#334155" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="1010" y="120" font-size="11" font-weight="600" fill="#e2e8f0">W8 (Dec 07)</text>
+
+  <!-- Task 1: Proposal (Oct 19 - Oct 25) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="145" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.3"/>
+    <text x="60" y="170" font-size="13" font-weight="600" fill="#f8fafc">1. Proposal</text>
+    <text x="210" y="170" font-size="11" fill="#94a3b8">Team (All)</text>
+    <rect x="320" y="152" width="95" height="26" rx="5" fill="url(#barGrad1)"/>
+    <text x="367" y="169" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Oct 19-25</text>
+  </g>
+
+  <!-- Task 2: ER & Schema (Oct 23 - Oct 31) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="190" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.2"/>
+    <text x="60" y="215" font-size="13" font-weight="600" fill="#f8fafc">2. ER &amp; Schema</text>
+    <text x="210" y="215" font-size="11" fill="#94a3b8">KARTHIKEYAN S</text>
+    <rect x="374" y="197" width="122" height="26" rx="5" fill="url(#barGrad2)"/>
+    <text x="435" y="214" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Oct 23-31</text>
+  </g>
+
+  <!-- Task 3: Database Implementation (Oct 29 - Nov 06) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="235" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.3"/>
+    <text x="60" y="260" font-size="13" font-weight="600" fill="#f8fafc">3. Database Implementation</text>
+    <text x="210" y="260" font-size="11" fill="#94a3b8">KARTHIKEYAN S</text>
+    <rect x="456" y="242" width="122" height="26" rx="5" fill="url(#barGrad2)"/>
+    <text x="517" y="259" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Oct 29 - Nov 06</text>
+  </g>
+
+  <!-- Task 4: Auth & RBAC (Nov 04 - Nov 12) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="280" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.2"/>
+    <text x="60" y="305" font-size="13" font-weight="600" fill="#f8fafc">4. Auth &amp; RBAC</text>
+    <text x="210" y="305" font-size="11" fill="#94a3b8">KARTHIKEYAN S, JASIM NAZIR AHMED</text>
+    <rect x="537" y="287" width="122" height="26" rx="5" fill="url(#barGrad3)"/>
+    <text x="598" y="304" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Nov 04-12</text>
+  </g>
+
+  <!-- Task 5: Backend API (Nov 10 - Nov 20) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="325" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.3"/>
+    <text x="60" y="350" font-size="13" font-weight="600" fill="#f8fafc">5. Backend API</text>
+    <text x="210" y="350" font-size="11" fill="#94a3b8">KARTHIKEYAN S</text>
+    <rect x="618" y="332" width="149" height="26" rx="5" fill="url(#barGrad3)"/>
+    <text x="692" y="349" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Nov 10-20</text>
+  </g>
+
+  <!-- Task 6: Frontend (Nov 17 - Nov 27) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="370" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.2"/>
+    <text x="60" y="395" font-size="13" font-weight="600" fill="#f8fafc">6. Frontend</text>
+    <text x="210" y="395" font-size="11" fill="#94a3b8">SUDIR NIRANJ</text>
+    <rect x="713" y="377" width="149" height="26" rx="5" fill="url(#barGrad4)"/>
+    <text x="787" y="394" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Nov 17-27</text>
+  </g>
+
+  <!-- Task 7: Advanced Features (Nov 24 - Dec 03) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="415" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.3"/>
+    <text x="60" y="440" font-size="13" font-weight="600" fill="#f8fafc">7. Advanced Features</text>
+    <text x="210" y="440" font-size="11" fill="#94a3b8">KARTHIKEYAN S, SUDIR NIRANJ</text>
+    <rect x="808" y="422" width="136" height="26" rx="5" fill="url(#barGrad4)"/>
+    <text x="876" y="439" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Nov 24 - Dec 03</text>
+  </g>
+
+  <!-- Task 8: Backup & Docker (Nov 29 - Dec 05) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="460" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.2"/>
+    <text x="60" y="485" font-size="13" font-weight="600" fill="#f8fafc">8. Backup &amp; Docker</text>
+    <text x="210" y="485" font-size="11" fill="#94a3b8">JASIM NAZIR AHMED</text>
+    <rect x="876" y="467" width="95" height="26" rx="5" fill="url(#barGrad6)"/>
+    <text x="923" y="484" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Nov 29 - Dec 05</text>
+  </g>
+
+  <!-- Task 9: Deployment & CI/CD (Dec 02 - Dec 08) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="505" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.3"/>
+    <text x="60" y="530" font-size="13" font-weight="600" fill="#f8fafc">9. Deployment &amp; CI/CD</text>
+    <text x="210" y="530" font-size="11" fill="#94a3b8">JASIM NAZIR AHMED</text>
+    <rect x="917" y="512" width="95" height="26" rx="5" fill="url(#barGrad6)"/>
+    <text x="964" y="529" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Dec 02-08</text>
+  </g>
+
+  <!-- Task 10: Testing & Documentation (Dec 06 - Dec 13) -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="550" width="1040" height="40" rx="4" fill="#1e293b" fill-opacity="0.2"/>
+    <text x="60" y="575" font-size="13" font-weight="600" fill="#f8fafc">10. Testing &amp; Documentation</text>
+    <text x="210" y="575" font-size="11" fill="#94a3b8">SUDIR NIRANJ, JASIM NAZIR AHMED</text>
+    <rect x="971" y="557" width="109" height="26" rx="5" fill="url(#barGrad5)"/>
+    <text x="1025" y="574" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">Dec 06-13</text>
+  </g>
+
+  <!-- Footer Info -->
+  <text x="40" y="620" font-size="11" fill="#64748b">VIT Fall 2026-27 | BCSE307L Database Systems Course Project Deliverable | AssetVault Monorepo</text>
+</svg>

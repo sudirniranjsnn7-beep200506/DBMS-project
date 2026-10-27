@@ -1,0 +1,138 @@
+name: AssetVault Continuous Integration
+
+on:
+  push:
+    branches: [ main, dev, frontend, backend ]
+  pull_request:
+    branches: [ main, dev, frontend, backend ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Lint, Test, Security & Build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: assetvault_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Monorepo Root Dependencies
+        run: npm ci
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Generate Prisma Client Types
+        run: |
+          cd backend
+          npx prisma generate --schema prisma/schema.prisma
+
+      - name: Security Gate - Scan for Exposed Secrets
+        run: npm run check:secrets
+
+      - name: Security Gate - SQL Injection Static Analysis
+        run: npm run check:sqli
+
+      - name: Static Type-Check & Linting
+        run: npm run lint
+
+      - name: Install PostgreSQL Client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
+      - name: Apply Database Migrations, Custom SQL Objects & Seed Data
+        env:
+          PGPASSWORD: postgrespassword
+          DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/assetvault_test_db?schema=public
+          DIRECT_URL: postgresql://postgres:postgrespassword@localhost:5432/assetvault_test_db?schema=public
+        run: |
+          cd backend
+          npx prisma migrate deploy --schema prisma/schema.prisma
+          psql -h localhost -p 5432 -U postgres -d assetvault_test_db -f ../database/sql/01_views.sql
+          psql -h localhost -p 5432 -U postgres -d assetvault_test_db -f ../database/sql/02_functions_procedures.sql
+          psql -h localhost -p 5432 -U postgres -d assetvault_test_db -f ../database/sql/03_triggers.sql
+          psql -h localhost -p 5432 -U postgres -d assetvault_test_db -f ../database/sql/04_rls.sql
+          psql -h localhost -p 5432 -U postgres -d assetvault_test_db -c "ALTER ROLE assetvault_app WITH LOGIN PASSWORD 'app_test_password_123'; GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO assetvault_app; GRANT EXECUTE ON ALL PROCEDURES IN SCHEMA public TO assetvault_app; ALTER MATERIALIZED VIEW IF EXISTS mv_monthly_access_stats OWNER TO assetvault_app; CREATE TABLE IF NOT EXISTS failed_login_attempts (key VARCHAR(255) PRIMARY KEY, email VARCHAR(255) NOT NULL, ip_address VARCHAR(45) NOT NULL, count INT NOT NULL DEFAULT 1, first_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), last_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), locked_until TIMESTAMPTZ); GRANT SELECT, INSERT, UPDATE, DELETE ON failed_login_attempts TO assetvault_app;"
+          npx prisma db seed --schema prisma/schema.prisma || npm run prisma:seed
+
+      - name: Execute Backend Tests
+        env:
+          NODE_ENV: test
+          PORT: 5000
+          DATABASE_URL: postgresql://assetvault_app:app_test_password_123@localhost:5432/assetvault_test_db?schema=public
+          TEST_DATABASE_URL: postgresql://assetvault_app:app_test_password_123@localhost:5432/assetvault_test_db?schema=public
+          APP_DATABASE_URL: postgresql://assetvault_app:app_test_password_123@localhost:5432/assetvault_test_db?schema=public
+          DIRECT_URL: postgresql://postgres:postgrespassword@localhost:5432/assetvault_test_db?schema=public
+          MIGRATE_DATABASE_URL: postgresql://postgres:postgrespassword@localhost:5432/assetvault_test_db?schema=public
+          JWT_SECRET: test_jwt_access_secret_32_characters_minimum_entropy_1234
+          JWT_ACCESS_SECRET: test_jwt_access_secret_32_characters_minimum_entropy_1234
+          JWT_REFRESH_SECRET: test_jwt_refresh_secret_32_characters_minimum_entropy_5678
+          COOKIE_SECRET: test_cookie_secret_32_characters_minimum_entropy_9012
+          CLIENT_URL: http://localhost:5173
+          CORS_ORIGIN: http://localhost:5173
+        run: |
+          cd backend
+          npm test
+
+      - name: Execute Frontend Tests
+        run: |
+          cd frontend
+          npm test
+
+      - name: Compile Production Database Seed
+        run: |
+          cd backend
+          node ../node_modules/typescript/bin/tsc -p tsconfig.seed.json || npx tsc -p tsconfig.seed.json
+
+      - name: Production Monorepo Build
+        run: npm run build
+
+      - name: Full Dependency Audit (including development tools)
+        if: always()
+        continue-on-error: true
+        run: npm audit
+
+      - name: Security Gate - Production Dependency Vulnerability Audit
+        if: always()
+        run: npm audit --omit=dev --audit-level=high
+
+  deploy:
+    name: Production Deployment Gate
+    needs: [validate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify All Pre-Deploy Validation Gates Passed
+        run: echo "✅ All linting, security scans, backend tests, and frontend tests passed successfully."

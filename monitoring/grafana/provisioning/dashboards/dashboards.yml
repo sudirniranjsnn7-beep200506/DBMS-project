@@ -1,0 +1,18 @@
+# ==============================================================================
+# AssetVault: Grafana Dashboard Provider Configuration
+# Auto-loads dashboards from /var/lib/grafana/dashboards
+# ==============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: 'AssetVault Dashboards'
+    orgId: 1
+    folder: 'AssetVault'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: true
